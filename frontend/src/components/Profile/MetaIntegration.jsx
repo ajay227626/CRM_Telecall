@@ -13,7 +13,7 @@ const MetaIntegration = () => {
     const loadStatus = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('http://localhost:8000/api/meta/status', {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/meta/status`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             setStatus(response.data);
@@ -26,7 +26,7 @@ const MetaIntegration = () => {
 
     const handleConnect = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/api/meta/auth-url', {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/meta/auth-url`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
 
@@ -45,7 +45,7 @@ const MetaIntegration = () => {
 
         try {
             await axios.post(
-                'http://localhost:8000/api/meta/disconnect',
+                `${import.meta.env.VITE_API_URL}/api/meta/disconnect`,
                 {},
                 { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
             );
@@ -62,7 +62,7 @@ const MetaIntegration = () => {
         try {
             setSyncing(true);
             await axios.post(
-                'http://localhost:8000/api/meta/sync',
+                `${import.meta.env.VITE_API_URL}/api/meta/sync`,
                 {},
                 { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
             );

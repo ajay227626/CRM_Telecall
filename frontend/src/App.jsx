@@ -29,7 +29,7 @@ function App() {
         try {
           // We can use getUsers and filter for now, or add a getProfile endpoint
           // Let's assume getUsers is efficient enough for now or add getProfile to api.js
-          const response = await fetch(`http://localhost:8000/api/users/${storedUser.id || storedUser._id}`, {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${storedUser.id || storedUser._id}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } // Add auth header if needed for getById
           });
           if (response.ok) {

@@ -164,7 +164,7 @@ const SecuritySettings = ({ user, navigate, onUserUpdate }) => {
         // Let's stick to 'unlink' being the main functional part here as requested to 'bind' is complex without backend merging logic.
         // But user asked to "bind". 
         // We will execute a simple redirect to the provider auth.
-        const url = `http://localhost:8000/api/auth/${provider}`;
+        const url = `${import.meta.env.VITE_API_URL}/api/auth/${provider}`;
         window.location.href = url;
     };
 
@@ -212,7 +212,7 @@ const SecuritySettings = ({ user, navigate, onUserUpdate }) => {
                 window.location.reload();
             } else if (securityAction.type === 'link') {
                 setShowSecurityModal(false);
-                const url = `http://localhost:8000/api/auth/${securityAction.provider}`;
+                const url = `${import.meta.env.VITE_API_URL}/api/auth/${securityAction.provider}`;
                 window.location.href = url;
             } else if (securityAction.type === 'deactivate') {
                 await deactivateAccount();

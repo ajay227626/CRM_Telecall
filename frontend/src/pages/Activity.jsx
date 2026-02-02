@@ -24,7 +24,7 @@ const Activity = () => {
                 limit: 50 // Fetch enough for a good view
             });
 
-            const res = await fetch(`http://localhost:8000/api/activities?${queryParams}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/activities?${queryParams}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

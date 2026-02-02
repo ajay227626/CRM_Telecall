@@ -94,7 +94,7 @@ const Login = ({ onLogin }) => {
 
     const handleGoogleLogin = () => {
         // Redirect to backend Google OAuth endpoint
-        window.location.href = 'http://localhost:8000/api/auth/google';
+        window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/google`;
     };
 
     return (
@@ -251,7 +251,7 @@ const Login = ({ onLogin }) => {
 
                             <button
                                 className="social-login-btn"
-                                onClick={() => window.location.href = 'http://localhost:8000/api/auth/microsoft'}
+                                onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/microsoft`}
                                 title="Continue with Microsoft"
                                 style={{
                                     display: 'flex',
@@ -285,7 +285,7 @@ const Login = ({ onLogin }) => {
 
                             <button
                                 className="social-login-btn"
-                                onClick={() => window.location.href = 'http://localhost:8000/api/auth/facebook'}
+                                onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/facebook`}
                                 title="Continue with Facebook"
                                 style={{
                                     display: 'flex',

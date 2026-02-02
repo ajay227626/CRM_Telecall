@@ -48,7 +48,7 @@ const LinkVerification = ({ onLogin }) => {
             }).join(''));
             const decoded = JSON.parse(jsonPayload);
 
-            const response = await fetch('http://localhost:8000/api/auth/send-otp', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/send-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: decoded.email })
@@ -78,7 +78,7 @@ const LinkVerification = ({ onLogin }) => {
                 body.otp = otp;
             }
 
-            const response = await fetch('http://localhost:8000/api/auth/verify-link', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/verify-link`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)

@@ -17,7 +17,7 @@ const MetaIntegrationsSettings = () => {
     const loadIntegrations = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('http://localhost:8000/api/meta/integrations', {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/meta/integrations`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             setIntegrations(response.data);
@@ -30,7 +30,7 @@ const MetaIntegrationsSettings = () => {
 
     const loadUsers = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/api/users', {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/users`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             setUsers(response.data.filter(u => u.isActive));
@@ -41,7 +41,7 @@ const MetaIntegrationsSettings = () => {
 
     const handleConnect = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/api/meta/auth-url', {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/meta/auth-url`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
 
@@ -56,7 +56,7 @@ const MetaIntegrationsSettings = () => {
     const handleUpdateIntegration = async (integration) => {
         try {
             await axios.put(
-                `http://localhost:8000/api/meta/integrations/${integration._id}`,
+                `${import.meta.env.VITE_API_URL}/api/meta/integrations/${integration._id}`,
                 integration,
                 { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
             );
@@ -76,7 +76,7 @@ const MetaIntegrationsSettings = () => {
         }
 
         try {
-            await axios.delete(`http://localhost:8000/api/meta/integrations/${id}`, {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/meta/integrations/${id}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
 
@@ -91,7 +91,7 @@ const MetaIntegrationsSettings = () => {
     const handleSync = async (id) => {
         try {
             await axios.post(
-                `http://localhost:8000/api/meta/integrations/${id}/sync`,
+                `${import.meta.env.VITE_API_URL}/api/meta/integrations/${id}/sync`,
                 {},
                 { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
             );
