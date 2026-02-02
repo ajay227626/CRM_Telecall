@@ -16,7 +16,7 @@ router.get('/google',
 );
 
 router.get('/google/callback', (req, res, next) => {
-    passport.authenticate('google', { failureRedirect: 'http://localhost:5173/login' }, (err, user, info) => {
+    passport.authenticate('google', { failureRedirect: 'https://crm-telecall-frontend.onrender.com/login' }, (err, user, info) => {
         if (err) return next(err);
 
         // Handle Unlinked Account (Security Check)
@@ -32,10 +32,10 @@ router.get('/google/callback', (req, res, next) => {
                 process.env.JWT_SECRET || 'your-jwt-secret',
                 { expiresIn: '15m' }
             );
-            return res.redirect(`http://localhost:5173/auth/verify-link?token=${pendingToken}&provider=${info.provider}`);
+            return res.redirect(`https://crm-telecall-frontend.onrender.com/auth/verify-link?token=${pendingToken}&provider=${info.provider}`);
         }
 
-        if (!user) return res.redirect('http://localhost:5173/login');
+        if (!user) return res.redirect('https://crm-telecall-frontend.onrender.com/login');
 
         req.logIn(user, (err) => {
             if (err) return next(err);
@@ -73,7 +73,7 @@ router.get('/google/callback', (req, res, next) => {
                 isCustomAvatar: user.isCustomAvatar
             }));
 
-            res.redirect(`http://localhost:5173/auth/callback?token=${token}&user=${userData}`);
+            res.redirect(`https://crm-telecall-frontend.onrender.com/auth/callback?token=${token}&user=${userData}`);
         });
     })(req, res, next);
 });
@@ -84,7 +84,7 @@ router.get('/microsoft',
 );
 
 router.get('/microsoft/callback', (req, res, next) => {
-    passport.authenticate('microsoft', { failureRedirect: 'http://localhost:5173/login' }, (err, user, info) => {
+    passport.authenticate('microsoft', { failureRedirect: 'https://crm-telecall-frontend.onrender.com/login' }, (err, user, info) => {
         if (err) return next(err);
 
         // Handle Unlinked Account
@@ -100,10 +100,10 @@ router.get('/microsoft/callback', (req, res, next) => {
                 process.env.JWT_SECRET || 'your-jwt-secret',
                 { expiresIn: '15m' }
             );
-            return res.redirect(`http://localhost:5173/auth/verify-link?token=${pendingToken}&provider=${info.provider}`);
+            return res.redirect(`https://crm-telecall-frontend.onrender.com/auth/verify-link?token=${pendingToken}&provider=${info.provider}`);
         }
 
-        if (!user) return res.redirect('http://localhost:5173/login');
+        if (!user) return res.redirect('https://crm-telecall-frontend.onrender.com/login');
 
         req.logIn(user, (err) => {
             if (err) return next(err);
@@ -141,7 +141,7 @@ router.get('/microsoft/callback', (req, res, next) => {
                 isCustomAvatar: user.isCustomAvatar
             }));
 
-            res.redirect(`http://localhost:5173/auth/callback?token=${token}&user=${userData}`);
+            res.redirect(`https://crm-telecall-frontend.onrender.com/auth/callback?token=${token}&user=${userData}`);
         });
     })(req, res, next);
 });
@@ -182,7 +182,7 @@ router.post('/security/verify', auth, authController.verifySecurityAction);
 router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
 
 router.get('/facebook/callback', (req, res, next) => {
-    passport.authenticate('facebook', { failureRedirect: 'http://localhost:5173/login' }, (err, user, info) => {
+    passport.authenticate('facebook', { failureRedirect: 'https://crm-telecall-frontend.onrender.com/login' }, (err, user, info) => {
         if (err) return next(err);
 
         // Handle Unlinked Account
@@ -198,10 +198,10 @@ router.get('/facebook/callback', (req, res, next) => {
                 process.env.JWT_SECRET || 'your-jwt-secret',
                 { expiresIn: '15m' }
             );
-            return res.redirect(`http://localhost:5173/auth/verify-link?token=${pendingToken}&provider=${info.provider}`);
+            return res.redirect(`https://crm-telecall-frontend.onrender.com/auth/verify-link?token=${pendingToken}&provider=${info.provider}`);
         }
 
-        if (!user) return res.redirect('http://localhost:5173/login');
+        if (!user) return res.redirect('https://crm-telecall-frontend.onrender.com/login');
 
         req.logIn(user, (err) => {
             if (err) return next(err);
@@ -239,7 +239,7 @@ router.get('/facebook/callback', (req, res, next) => {
                 isCustomAvatar: user.isCustomAvatar
             }));
 
-            res.redirect(`http://localhost:5173/auth/callback?token=${token}&user=${userData}`);
+            res.redirect(`https://crm-telecall-frontend.onrender.com/auth/callback?token=${token}&user=${userData}`);
         });
     })(req, res, next);
 });
