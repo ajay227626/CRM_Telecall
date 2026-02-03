@@ -3,15 +3,47 @@ const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const { google } = require('googleapis');
 
-// Create transporter
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.GMAIL_APP_EMAIL,
-        pass: process.env.GMAIL_APP_PASSWORD
-    }
-});
+// Gmail OAuth2 Configuration
+const OAuth2 = google.auth.OAuth2;
+
+// Create OAuth2 client for Gmail
+const createOAuth2Client = () => {
+    return new OAuth2(
+        process.env.GMAIL_OAUTH_CLIENT_ID,
+        process.env.GMAIL_OAUTH_CLIENT_SECRET,
+        'https://developers.google.com/oauthplayground' // Redirect URL
+    );
+};
+
+// Create transporter with OAuth2
+const createTransporter = async () => {
+    const oauth2Client = createOAuth2Client();
+    oauth2Client.setCredentials({
+        refresh_token: process.env.GMAIL_OAUTH_REFRESH_TOKEN
+    });
+
+    const accessToken = await oauth2Client.getAccessToken();
+
+    return nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            type: 'OAuth2',
+            user: process.env.GMAIL_APP_EMAIL,
+            clientId: process.env.GMAIL_OAUTH_CLIENT_ID,
+            clientSecret: process.env.GMAIL_OAUTH_CLIENT_SECRET,
+            refreshToken: process.env.GMAIL_OAUTH_REFRESH_TOKEN,
+            accessToken: accessToken.token
+        }
+    });
+};
+
+// Helper function to send email
+const sendEmail = async (mailOptions) => {
+    const transporter = await createTransporter();
+    return transporter.sendMail(mailOptions);
+};
 
 exports.sendOTP = async (req, res) => {
     try {
@@ -80,7 +112,7 @@ exports.sendOTP = async (req, res) => {
             `
         };
 
-        await transporter.sendMail(mailOptions);
+        await sendEmail(mailOptions);
 
         res.json({ message: 'OTP sent successfully' });
     } catch (err) {
@@ -190,7 +222,7 @@ exports.initiatePasswordReset = async (req, res) => {
             `
         };
 
-        await transporter.sendMail(mailOptions);
+        await sendEmail(mailOptions);
 
         res.json({ message: 'Password reset OTP sent successfully' });
     } catch (err) {
@@ -462,7 +494,7 @@ exports.requestDeleteAccount = async (req, res) => {
             `
         };
 
-        await transporter.sendMail(mailOptions);
+        await sendEmail(mailOptions);
 
         res.status(200).json({ message: 'Verification code sent to email' });
     } catch (error) {
@@ -556,7 +588,7 @@ exports.requestSetPasswordOTP = async (req, res) => {
                     </div>
                 `
         };
-        await transporter.sendMail(mailOptions);
+        await sendEmail(mailOptions);
         res.json({ message: 'Verification code sent to email' });
 
     } catch (error) {
@@ -637,7 +669,7 @@ exports.initiateChangePassword = async (req, res) => {
                     </div>
                 `
         };
-        await transporter.sendMail(mailOptions);
+        await sendEmail(mailOptions);
         res.json({ message: 'Current password verified. OTP sent.' });
 
     } catch (error) {
@@ -852,7 +884,7 @@ exports.requestSecurityOTP = async (req, res) => {
             `
         };
 
-        await transporter.sendMail(mailOptions);
+        await sendEmail(mailOptions);
         res.json({ message: 'Verification code sent to email' });
 
     } catch (error) {
