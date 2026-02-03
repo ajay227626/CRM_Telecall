@@ -97,7 +97,7 @@ export const CallProvider = ({ children }) => {
                 // Determine status based on duration
                 const status = callDuration > 0 ? 'completed' : 'no answer';
 
-                await fetch('https://crm-telecall-backend.onrender.com/api/call-logs', {
+                await fetch(`${import.meta.env.VITE_API_URL}/api/call-logs`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
