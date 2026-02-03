@@ -4,6 +4,27 @@ const authController = require('../controllers/authController');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 
+// Health check endpoint for Gmail OAuth2 configuration
+router.get('/gmail-config-check', (req, res) => {
+    const config = {
+        hasClientId: !!process.env.GMAIL_OAUTH_CLIENT_ID,
+        hasClientSecret: !!process.env.GMAIL_OAUTH_CLIENT_SECRET,
+        hasRefreshToken: !!process.env.GMAIL_OAUTH_REFRESH_TOKEN,
+        hasEmail: !!process.env.GMAIL_APP_EMAIL,
+        email: process.env.GMAIL_APP_EMAIL ? process.env.GMAIL_APP_EMAIL.substring(0, 3) + '***' : 'not set'
+    };
+    
+    const allConfigured = config.hasClientId && config.hasClientSecret && config.hasRefreshToken && config.hasEmail;
+    
+    res.json({
+        status: allConfigured ? 'configured' : 'missing_config',
+        config,
+        message: allConfigured 
+            ? 'Gmail OAuth2 appears to be configured' 
+            : 'Missing required Gmail OAuth2 environment variables'
+    });
+});
+
 router.post('/send-otp', authController.sendOTP);
 router.post('/verify-otp', authController.verifyOTP);
 router.post('/initiate-password-reset', authController.initiatePasswordReset);

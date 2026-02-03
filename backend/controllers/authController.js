@@ -60,17 +60,30 @@ const createTransporter = async () => {
 
 // Helper function to send email
 const sendEmail = async (mailOptions) => {
-    console.log('Attempting to send email to:', mailOptions.to);
-    const transporter = await createTransporter();
-    const result = await transporter.sendMail(mailOptions);
-    console.log('Email sent successfully:', result.messageId);
-    return result;
+    console.log('[Email] Attempting to send email to:', mailOptions.to);
+    try {
+        const transporter = await createTransporter();
+        console.log('[Email] Transporter created successfully');
+        const result = await transporter.sendMail(mailOptions);
+        console.log('[Email] Email sent successfully. Message ID:', result.messageId);
+        return result;
+    } catch (error) {
+        console.error('[Email] Failed to send email:', {
+            message: error.message,
+            code: error.code,
+            command: error.command,
+            response: error.response
+        });
+        throw error;
+    }
 };
 
 exports.sendOTP = async (req, res) => {
     try {
         const { email } = req.body;
         if (!email) return res.status(400).json({ error: 'Email is required' });
+
+        console.log('[OTP] Processing OTP request for:', email);
 
         // Check if user exists, if not create a new one (or specific behavior for first-time login)
         let user = await User.findOne({ email });
@@ -115,7 +128,9 @@ exports.sendOTP = async (req, res) => {
             expiresAt: otpExpires
         };
 
+        console.log('[OTP] Saving user with OTP to database...');
         await user.save();
+        console.log('[OTP] User saved successfully');
 
         // Send Email
         const mailOptions = {
@@ -134,12 +149,33 @@ exports.sendOTP = async (req, res) => {
             `
         };
 
+        console.log('[OTP] Attempting to send email...');
         await sendEmail(mailOptions);
+        console.log('[OTP] Email sent successfully');
 
         res.json({ message: 'OTP sent successfully' });
     } catch (err) {
-        console.error('OTP Send Error:', err);
-        res.status(500).json({ error: 'Failed to send OTP' });
+        console.error('OTP Send Error Details:', {
+            message: err.message,
+            stack: err.stack,
+            code: err.code,
+            response: err.response?.data || err.response
+        });
+        
+        // Provide more specific error messages
+        let errorMessage = 'Failed to send OTP';
+        if (err.message.includes('OAuth2') || err.message.includes('credentials')) {
+            errorMessage = 'Email service configuration error. Please contact support.';
+        } else if (err.message.includes('Invalid login')) {
+            errorMessage = 'Email authentication failed. Please contact support.';
+        } else if (err.code === 'EAUTH') {
+            errorMessage = 'Email authentication error. Please contact support.';
+        }
+        
+        res.status(500).json({ 
+            error: errorMessage,
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
     }
 };
 
@@ -210,6 +246,8 @@ exports.initiatePasswordReset = async (req, res) => {
         const { email } = req.body;
         if (!email) return res.status(400).json({ error: 'Email is required' });
 
+        console.log('[Password Reset] Processing password reset request for:', email);
+
         // Find the user
         const user = await User.findOne({ email });
         if (!user) {
@@ -244,12 +282,26 @@ exports.initiatePasswordReset = async (req, res) => {
             `
         };
 
+        console.log('[Password Reset] Sending email...');
         await sendEmail(mailOptions);
+        console.log('[Password Reset] Email sent successfully');
 
         res.json({ message: 'Password reset OTP sent successfully' });
     } catch (err) {
-        console.error('Password Reset Initiate Error:', err);
-        res.status(500).json({ error: 'Failed to send password reset OTP' });
+        console.error('Password Reset Initiate Error:', {
+            message: err.message,
+            stack: err.stack
+        });
+        
+        let errorMessage = 'Failed to send password reset OTP';
+        if (err.message.includes('OAuth2') || err.message.includes('credentials')) {
+            errorMessage = 'Email service configuration error. Please contact support.';
+        }
+        
+        res.status(500).json({ 
+            error: errorMessage,
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
     }
 };
 
