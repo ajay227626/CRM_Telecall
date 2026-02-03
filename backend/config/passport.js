@@ -3,56 +3,60 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-// Configure Google OAuth Strategy
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: 'https://crm-telecall-backend.onrender.com/api/auth/google/callback'
-},
-    async (accessToken, refreshToken, profile, done) => {
-        try {
-            // Check if user already exists
-            let user = await User.findOne({ email: profile.emails[0].value });
+// Configure Google OAuth Strategy (only if credentials are set)
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(new GoogleStrategy({
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: 'https://crm-telecall-backend.onrender.com/api/auth/google/callback'
+    },
+        async (accessToken, refreshToken, profile, done) => {
+            try {
+                // Check if user already exists
+                let user = await User.findOne({ email: profile.emails[0].value });
 
-            if (user) {
-                // User exists, check if Google ID is already linked
-                if (user.googleId) {
-                    // Already linked, just update avatar if needed
-                    user.googleAvatar = profile.photos[0]?.value;
-                    if (!user.isCustomAvatar || !user.avatar) {
-                        user.avatar = profile.photos[0]?.value;
+                if (user) {
+                    // User exists, check if Google ID is already linked
+                    if (user.googleId) {
+                        // Already linked, just update avatar if needed
+                        user.googleAvatar = profile.photos[0]?.value;
+                        if (!user.isCustomAvatar || !user.avatar) {
+                            user.avatar = profile.photos[0]?.value;
+                        }
+                        await user.save();
+                        return done(null, user);
+                    } else {
+                        // User exists but NOT linked to Google -> Security Check Required
+                        return done(null, false, {
+                            type: 'unlinked_account',
+                            user: user,
+                            provider: 'google',
+                            profile: profile
+                        });
                     }
-                    await user.save();
-                    return done(null, user);
-                } else {
-                    // User exists but NOT linked to Google -> Security Check Required
-                    return done(null, false, {
-                        type: 'unlinked_account',
-                        user: user,
-                        provider: 'google',
-                        profile: profile
-                    });
                 }
+
+                // Create new user
+                user = await User.create({
+                    googleId: profile.id,
+                    name: profile.displayName,
+                    email: profile.emails[0].value,
+                    avatar: profile.photos[0]?.value,
+                    googleAvatar: profile.photos[0]?.value, // Initialize googleAvatar
+                    isCustomAvatar: false, // Default to using Google avatar
+                    systemRole: null, // Will be assigned by Admin
+                    status: 'Active',
+                    permissions: []
+                });
+
+                done(null, user);
+            } catch (error) {
+                done(error, null);
             }
-
-            // Create new user
-            user = await User.create({
-                googleId: profile.id,
-                name: profile.displayName,
-                email: profile.emails[0].value,
-                avatar: profile.photos[0]?.value,
-                googleAvatar: profile.photos[0]?.value, // Initialize googleAvatar
-                isCustomAvatar: false, // Default to using Google avatar
-                systemRole: null, // Will be assigned by Admin
-                status: 'Active',
-                permissions: []
-            });
-
-            done(null, user);
-        } catch (error) {
-            done(error, null);
-        }
-    }));
+        }));
+} else {
+    console.warn('Google OAuth not configured: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET missing');
+}
 
 // Configure Microsoft Strategy
 const MicrosoftStrategy = require('passport-microsoft').Strategy;
