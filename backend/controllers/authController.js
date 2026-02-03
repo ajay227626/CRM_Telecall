@@ -19,30 +19,52 @@ const createOAuth2Client = () => {
 
 // Create transporter with OAuth2
 const createTransporter = async () => {
-    const oauth2Client = createOAuth2Client();
-    oauth2Client.setCredentials({
-        refresh_token: process.env.GMAIL_OAUTH_REFRESH_TOKEN
-    });
+    // Check if OAuth2 credentials are available
+    if (!process.env.GMAIL_OAUTH_CLIENT_ID || !process.env.GMAIL_OAUTH_CLIENT_SECRET || !process.env.GMAIL_OAUTH_REFRESH_TOKEN) {
+        console.error('Gmail OAuth2 credentials missing. Required: GMAIL_OAUTH_CLIENT_ID, GMAIL_OAUTH_CLIENT_SECRET, GMAIL_OAUTH_REFRESH_TOKEN');
+        console.log('Available env vars:', {
+            hasClientId: !!process.env.GMAIL_OAUTH_CLIENT_ID,
+            hasClientSecret: !!process.env.GMAIL_OAUTH_CLIENT_SECRET,
+            hasRefreshToken: !!process.env.GMAIL_OAUTH_REFRESH_TOKEN,
+            hasEmail: !!process.env.GMAIL_APP_EMAIL
+        });
+        throw new Error('Gmail OAuth2 credentials not configured');
+    }
 
-    const accessToken = await oauth2Client.getAccessToken();
+    try {
+        const oauth2Client = createOAuth2Client();
+        oauth2Client.setCredentials({
+            refresh_token: process.env.GMAIL_OAUTH_REFRESH_TOKEN
+        });
 
-    return nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            type: 'OAuth2',
-            user: process.env.GMAIL_APP_EMAIL,
-            clientId: process.env.GMAIL_OAUTH_CLIENT_ID,
-            clientSecret: process.env.GMAIL_OAUTH_CLIENT_SECRET,
-            refreshToken: process.env.GMAIL_OAUTH_REFRESH_TOKEN,
-            accessToken: accessToken.token
-        }
-    });
+        console.log('Getting access token...');
+        const accessToken = await oauth2Client.getAccessToken();
+        console.log('Access token obtained successfully');
+
+        return nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                type: 'OAuth2',
+                user: process.env.GMAIL_APP_EMAIL,
+                clientId: process.env.GMAIL_OAUTH_CLIENT_ID,
+                clientSecret: process.env.GMAIL_OAUTH_CLIENT_SECRET,
+                refreshToken: process.env.GMAIL_OAUTH_REFRESH_TOKEN,
+                accessToken: accessToken.token
+            }
+        });
+    } catch (error) {
+        console.error('Error creating email transporter:', error.message);
+        throw error;
+    }
 };
 
 // Helper function to send email
 const sendEmail = async (mailOptions) => {
+    console.log('Attempting to send email to:', mailOptions.to);
     const transporter = await createTransporter();
-    return transporter.sendMail(mailOptions);
+    const result = await transporter.sendMail(mailOptions);
+    console.log('Email sent successfully:', result.messageId);
+    return result;
 };
 
 exports.sendOTP = async (req, res) => {
