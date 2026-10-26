@@ -89,15 +89,39 @@ async function upsertCrmUserFromClaims(claims) {
   return user;
 }
 
+function getCookieDomain(req) {
+  const host = (req.get('x-forwarded-host') || req.get('host') || '').split(':')[0].toLowerCase();
+  if (host.endsWith('ajaywebservices.in')) {
+    return '.ajaywebservices.in';
+  }
+  return undefined;
+}
+
 function getRedirectUri(req) {
+  const forwardedHost = req.get('x-forwarded-host');
+  const rawHost = (forwardedHost || req.get('host') || '').split(':')[0].toLowerCase();
+  const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
+
+  // 1. Local development
+  if (rawHost.includes('localhost') || rawHost.includes('127.0.0.1')) {
+    const port = (req.get('host') || '').split(':')[1] || '8000';
+    return `${protocol}://${rawHost}:${port}/api/auth/oidc/callback`;
+  }
+
+  // 2. Custom domain on ajaywebservices.in
+  if (rawHost.endsWith('ajaywebservices.in')) {
+    return 'https://crm.ajaywebservices.in/api/auth/oidc/callback';
+  }
+
+  // 3. Vercel deployment (preview or *.vercel.app)
+  if (rawHost.endsWith('vercel.app')) {
+    return `https://${rawHost}/api/auth/oidc/callback`;
+  }
+
+  // 4. Fallback to env or canonical domain
   if (process.env.SLM_OIDC_REDIRECT_URI) return process.env.SLM_OIDC_REDIRECT_URI;
   if (process.env.SLM_REDIRECT_URI) return process.env.SLM_REDIRECT_URI;
-  const host = req.get('host') || '';
-  const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
-  if (host.includes('localhost') || host.includes('127.0.0.1')) {
-    return `${protocol}://${host}/api/auth/oidc/callback`;
-  }
-  return 'https://crm-telecall.vercel.app/api/auth/oidc/callback';
+  return 'https://crm.ajaywebservices.in/api/auth/oidc/callback';
 }
 
 // Handler: Initiate OIDC Login
@@ -113,12 +137,15 @@ const handleOidcLogin = (req, res) => {
       ? req.query.returnUrl
       : '/';
 
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true';
+    const cookieDomain = getCookieDomain(req);
     const cookieOpts = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
       path: '/',
-      maxAge: 10 * 60 * 1000 // 10 minutes
+      maxAge: 10 * 60 * 1000, // 10 minutes
+      ...(cookieDomain ? { domain: cookieDomain } : {})
     };
 
     res.cookie('oidc_state', state, cookieOpts);
@@ -169,7 +196,12 @@ const handleOidcCallback = async (req, res) => {
     const codeVerifier = req.cookies?.oidc_verifier || req.cookies?.slm_code_verifier;
     const returnUrl = req.cookies?.oidc_return || '/';
 
-    const clearOpts = { path: '/' };
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true';
+    const cookieDomain = getCookieDomain(req);
+    const clearOpts = {
+      path: '/',
+      ...(cookieDomain ? { domain: cookieDomain } : {})
+    };
     res.clearCookie('oidc_state', clearOpts);
     res.clearCookie('oidc_nonce', clearOpts);
     res.clearCookie('oidc_verifier', clearOpts);
@@ -177,6 +209,12 @@ const handleOidcCallback = async (req, res) => {
     res.clearCookie('slm_oauth_state', clearOpts);
     res.clearCookie('slm_nonce', clearOpts);
     res.clearCookie('slm_code_verifier', clearOpts);
+    if (cookieDomain) {
+      res.clearCookie('oidc_state', { path: '/' });
+      res.clearCookie('oidc_nonce', { path: '/' });
+      res.clearCookie('oidc_verifier', { path: '/' });
+      res.clearCookie('oidc_return', { path: '/' });
+    }
 
     if (!code || !codeVerifier) {
       return res.redirect('/login?auth_error=' + encodeURIComponent('Missing authorization code or PKCE verifier.'));
@@ -243,10 +281,11 @@ const handleOidcCallback = async (req, res) => {
 
     res.cookie('crm_session', sessionToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isProduction,
       sameSite: 'lax',
       path: '/',
-      maxAge: 24 * 60 * 60 * 1000
+      maxAge: 24 * 60 * 60 * 1000,
+      ...(cookieDomain ? { domain: cookieDomain } : {})
     });
 
     res.redirect(returnUrl);
@@ -395,7 +434,11 @@ router.post('/logout', async (req, res) => {
       await Session.deleteOne({ sessionToken });
     }
 
+    const cookieDomain = getCookieDomain(req);
     res.clearCookie('crm_session', { path: '/' });
+    if (cookieDomain) {
+      res.clearCookie('crm_session', { domain: cookieDomain, path: '/' });
+    }
 
     const isProd = process.env.NODE_ENV === 'production';
     if (isProd) {
