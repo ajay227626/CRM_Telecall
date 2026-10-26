@@ -1,7 +1,6 @@
 /**
  * Safely resolves the API base URL.
- * In production (Vercel / custom domain), frontend and backend share the same origin,
- * so all API requests and auth redirects use relative paths or window.location.origin.
+ * In production (Vercel / custom domain), frontend and backend share the same origin, so all API requests and auth redirects use relative paths or window.location.origin.
  * Legacy hostnames (e.g., railway.app, onrender.com) are strictly filtered out.
  */
 export const getApiBaseUrl = () => {
