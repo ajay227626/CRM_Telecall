@@ -49,6 +49,53 @@ async function saveCrmSession(sessionToken, data) {
   }
 }
 
+/**
+ * Maps Central SLM OIDC claims to CRM systemRole adhering to the ecosystem role taxonomy:
+ * 1. Global Platform Super Role: 'developer' / 'SuperAdmin' (cross-tenant, root platform)
+ * 2. Tenant Admin: 'Admin' (scoped to tenant)
+ * 3. Tenant Member/Agent: 'User' / 'Guest' (subject to strict privilege ceilings)
+ */
+function mapSlmClaimsToCrmRole(claims, email) {
+  const rootEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_GOOGLE_EMAIL || '').toLowerCase().trim();
+  const orgRole = (claims.organisation_role || '').toLowerCase();
+  const orgId = claims.organisation_id || claims.organisationId || '';
+  const isRootOrg = orgId === 'org_root' || orgId === 'ws_default';
+  const entitlements = claims.entitlements || claims.products || [];
+
+  // 1. Platform Developer / SuperAdmin
+  const isSuper =
+    claims.is_superadmin === true ||
+    orgRole === 'root_owner' ||
+    orgRole === 'developer' ||
+    claims.system_role?.toLowerCase() === 'superadmin' ||
+    claims.system_role?.toLowerCase() === 'developer' ||
+    claims.role?.toLowerCase() === 'superadmin' ||
+    claims.role?.toLowerCase() === 'developer' ||
+    (Array.isArray(claims.roles) && claims.roles.some(r => typeof r === 'string' && ['superadmin', 'developer', 'root_owner'].includes(r.toLowerCase()))) ||
+    (isRootOrg && ['owner', 'admin'].includes(orgRole)) ||
+    (Array.isArray(entitlements) && entitlements.includes('*')) ||
+    (Boolean(rootEmail) && email === rootEmail);
+
+  if (isSuper) {
+    return 'SuperAdmin';
+  }
+
+  // 2. Tenant Admin
+  const isAdmin =
+    orgRole === 'owner' ||
+    orgRole === 'admin' ||
+    claims.system_role?.toLowerCase() === 'admin' ||
+    claims.role?.toLowerCase() === 'admin' ||
+    (Array.isArray(claims.roles) && claims.roles.some(r => typeof r === 'string' && ['admin', 'owner'].includes(r.toLowerCase())));
+
+  if (isAdmin) {
+    return 'Admin';
+  }
+
+  // 3. Strict SLM privilege ceiling: standard tenant user
+  return claims.system_role || claims.role || 'Guest';
+}
+
 async function upsertCrmUserFromClaims(claims) {
   const email = (claims.email || '').toLowerCase().trim();
   const slmSub = claims.sub;
@@ -57,24 +104,9 @@ async function upsertCrmUserFromClaims(claims) {
   const entitlements = claims.entitlements || claims.products || [];
   const organisationId = claims.organisation_id || claims.organisationId || null;
 
-  // Derive roles strictly from Central SLM claims (zero hardcoded user emails)
-  const isSuperAdmin =
-    claims.is_superadmin === true ||
-    claims.system_role?.toLowerCase() === 'superadmin' ||
-    claims.systemRole?.toLowerCase() === 'superadmin' ||
-    claims.role?.toLowerCase() === 'superadmin' ||
-    (Array.isArray(claims.roles) && claims.roles.some(r => typeof r === 'string' && r.toLowerCase() === 'superadmin')) ||
-    (Array.isArray(entitlements) && entitlements.includes('*'));
-
-  const isOrgAdmin = isSuperAdmin ||
-    claims.organisation_role === 'Owner' ||
-    claims.organisation_role === 'Admin' ||
-    claims.system_role?.toLowerCase() === 'admin' ||
-    claims.systemRole?.toLowerCase() === 'admin' ||
-    claims.role?.toLowerCase() === 'admin' ||
-    (Array.isArray(claims.roles) && claims.roles.some(r => typeof r === 'string' && r.toLowerCase() === 'admin'));
-
-  const assignedRole = isSuperAdmin ? 'SuperAdmin' : (isOrgAdmin ? 'Admin' : (claims.system_role || claims.systemRole || claims.role || 'Guest'));
+  // Authoritative dynamic role mapping from SLM
+  const assignedRole = mapSlmClaimsToCrmRole(claims, email);
+  const isSuperAdmin = assignedRole === 'SuperAdmin';
   const slmPermissions = Array.isArray(claims.permissions) && claims.permissions.length ? claims.permissions : null;
   const effectivePermissions = isSuperAdmin ? ['ALL'] : (slmPermissions || []);
 
@@ -91,16 +123,10 @@ async function upsertCrmUserFromClaims(claims) {
     if (avatar && (!user.avatar || !user.isCustomAvatar)) user.avatar = avatar;
     if (entitlements && entitlements.length) user.entitlements = entitlements;
     if (organisationId) user.currentOrganisationId = organisationId;
-    if (isSuperAdmin) {
-      user.systemRole = 'SuperAdmin';
-      user.permissions = ['ALL'];
-    } else if (isOrgAdmin && user.systemRole === 'Guest') {
-      user.systemRole = 'Admin';
-      if (slmPermissions) user.permissions = slmPermissions;
-    } else if (claims.system_role || claims.systemRole || claims.role) {
-      user.systemRole = claims.system_role || claims.systemRole || claims.role;
-      if (slmPermissions) user.permissions = slmPermissions;
-    }
+
+    // SLM is authoritative: sync role & ceiling dynamically
+    user.systemRole = assignedRole;
+    user.permissions = effectivePermissions;
     user.lastLogin = new Date();
     await user.save();
   } else {
