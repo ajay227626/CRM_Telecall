@@ -1,5 +1,5 @@
-const app = require('../backend/server.js');
-const { connectDB } = require('../backend/config/db.js');
+const app = require('../server/server.js');
+const { connectDB } = require('../server/config/db.js');
 
 module.exports = async (req, res) => {
     try {

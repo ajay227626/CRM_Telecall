@@ -2,8 +2,8 @@ const http = require('http');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
-const app = require('./server.js');
-const Session = require('./models/Session.js');
+const app = require('../server/server.js');
+const Session = require('../server/models/Session.js');
 
 async function runTests() {
   console.log('=== STARTING OIDC BACKCHANNEL LOGOUT INTEGRATION TESTS ===\n');

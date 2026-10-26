@@ -1,11 +1,15 @@
 const mongoose = require('mongoose');
 const User = require('./models/User');
 const bcrypt = require('bcrypt');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 require('dotenv').config();
 
 async function createTestAdmin() {
     try {
-        await mongoose.connect('mongodb+srv://ajayCRMTeleCall:CRMTeleCallGoptyl%402529@crmtelecall1.esnfcga.mongodb.net/telecall_crm');
+        const uri = process.env.MONGODB_URI;
+        if (!uri) throw new Error('MONGODB_URI not found in environment');
+        await mongoose.connect(uri);
         console.log('Connected to MongoDB');
 
         const hashedPassword = await bcrypt.hash('password123', 10);

@@ -224,12 +224,6 @@ exports.verifyOTP = async (req, res) => {
                 permissions: user.permissions,
                 avatar: user.avatar,
                 avatarHistory: user.avatarHistory,
-                googleId: user.googleId,
-                facebookId: user.facebookId,
-                microsoftId: user.microsoftId,
-                googleAvatar: user.googleAvatar,
-                facebookAvatar: user.facebookAvatar,
-                microsoftAvatar: user.microsoftAvatar,
                 isCustomAvatar: user.isCustomAvatar,
                 hasPassword: !!user.password
             }
@@ -393,12 +387,6 @@ exports.login = async (req, res) => {
                 permissions: user.permissions,
                 avatar: user.avatar,
                 avatarHistory: user.avatarHistory,
-                googleId: user.googleId,
-                facebookId: user.facebookId,
-                microsoftId: user.microsoftId,
-                googleAvatar: user.googleAvatar,
-                facebookAvatar: user.facebookAvatar,
-                microsoftAvatar: user.microsoftAvatar,
                 isCustomAvatar: user.isCustomAvatar,
                 hasPassword: !!user.password
             }

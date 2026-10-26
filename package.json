@@ -8,10 +8,12 @@
   },
   "scripts": {
     "dev": "vite",
-    "dev:backend": "node backend/server.js",
+    "server": "node server/server.js",
+    "dev:server": "nodemon server/server.js",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "node backend/server.js"
+    "start": "node server/server.js",
+    "test": "node test/test-cluster0-connection.js && node test/test-multitenancy.js && node test/test-backchannel.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

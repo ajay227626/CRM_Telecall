@@ -10,10 +10,10 @@
 
 const assert = require('assert');
 const mongoose = require('mongoose');
-const requireEntitlement = require('./middleware/entitlementGuard');
-const { tenantContext, runInTenantContext, getTenantId } = require('./middleware/tenantContext');
-const Lead = require('./models/Lead');
-const CallLog = require('./models/CallLog');
+const requireEntitlement = require('../server/middleware/entitlementGuard');
+const { tenantContext, runInTenantContext, getTenantId } = require('../server/middleware/tenantContext');
+const Lead = require('../server/models/Lead');
+const CallLog = require('../server/models/CallLog');
 
 async function runTests() {
   console.log('--- STARTING MULTI-TENANCY & ENTITLEMENTS VERIFICATION ---');

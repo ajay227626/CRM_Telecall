@@ -1,3 +1,7 @@
+if (!global.crypto?.randomBytes) {
+    const nodeCrypto = require('crypto');
+    global.crypto = Object.assign(global.crypto || {}, nodeCrypto);
+}
 const mongoose = require('mongoose');
 
 let cached = global.mongoose || { conn: null, promise: null };

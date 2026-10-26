@@ -1,10 +1,17 @@
 const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const path = require('path');
+dotenv.config({ path: path.join(__dirname, '../.env') });
+dotenv.config();
 
-const uri = 'mongodb+srv://ajay22071997barman_db_user:WdvOmX4sjlHOuaC0@cluster0.shcnisx.mongodb.net/slm_production?retryWrites=true&w=majority&appName=Cluster0';
+const baseUri = process.env.SLM_MONGODB_URI || process.env.MONGODB_URI;
+if (!baseUri) {
+    throw new Error('MONGODB_URI or SLM_MONGODB_URI must be set in .env');
+}
 
 async function seedSLM() {
     console.log('=== STARTING CENTRAL SLM PRODUCT & OIDC SEEDING ===\n');
-    await mongoose.connect(uri);
+    await mongoose.connect(baseUri, { dbName: 'slm_production' });
     const db = mongoose.connection.db;
 
     // 1. Product Document in `products`

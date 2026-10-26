@@ -1,11 +1,11 @@
 const dotenv = require('dotenv');
 const path = require('path');
-dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
-const { connectDB } = require('./config/db');
-const User = require('./models/User');
-const Session = require('./models/Session');
-const Lead = require('./models/Lead');
+const { connectDB } = require('../server/config/db');
+const User = require('../server/models/User');
+const Session = require('../server/models/Session');
+const Lead = require('../server/models/Lead');
 const mongoose = require('mongoose');
 
 async function testCluster0() {
