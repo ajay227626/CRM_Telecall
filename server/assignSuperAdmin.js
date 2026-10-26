@@ -18,6 +18,7 @@ mongoose.connect(mongoUri)
     });
 
 async function assignSuperAdmin() {
+    try {
         const email = process.argv[2] || process.env.ADMIN_EMAIL;
         if (!email) {
             console.log('Usage: node server/assignSuperAdmin.js <email>');
