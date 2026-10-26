@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUsers, toggleUserStatus, updateUserPermissions, updateUser, uploadAvatar, selectAvatar, deactivateAccount, requestDeleteAccount, confirmDeleteAccount, getEffectiveSettings, createUser, deleteUser } from '../utils/api';
+import * as api from '../utils/api';
+const { getUsers, toggleUserStatus, updateUserPermissions, updateUser, uploadAvatar, selectAvatar, deactivateAccount, requestDeleteAccount, confirmDeleteAccount, getEffectiveSettings, createUser, deleteUser } = api;
 import { hasPermission, PERMISSIONS, getUser } from '../utils/permissions';
 import ConfirmationModal from '../components/Shared/ConfirmationModal';
 import { useAppearance } from '../context/AppearanceContext';
@@ -184,7 +185,6 @@ const SecuritySettings = ({ user, navigate, onUserUpdate }) => {
         setSecurityLoading(true);
         setSecurityError(null);
         try {
-            const api = await import('../utils/api');
             await api.requestSecurityOTP();
             setSecurityStep('otp-sent');
         } catch (err) {
@@ -198,8 +198,6 @@ const SecuritySettings = ({ user, navigate, onUserUpdate }) => {
         setSecurityLoading(true);
         setSecurityError(null);
         try {
-            const api = await import('../utils/api');
-
             // Verify credentials first
             const credential = securityMethod === 'password' ? { password: securityPassword } : { otp: securityOtp };
             await api.verifySecurityAction(credential);
@@ -249,8 +247,6 @@ const SecuritySettings = ({ user, navigate, onUserUpdate }) => {
         setLoading(true);
 
         try {
-            const api = await import('../utils/api');
-
             if (passwordStep === 'set-new') {
                 // Request OTP for setting password
                 await api.requestSetPasswordOTP();
