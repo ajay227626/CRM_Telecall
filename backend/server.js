@@ -60,8 +60,8 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Start standalone server only when run directly or in development
-if (process.env.NODE_ENV !== 'production' || require.main === module) {
+// Start standalone server only when run directly
+if (require.main === module) {
     connectDB()
         .then(() => {
             app.listen(PORT, () => {
