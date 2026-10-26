@@ -2,9 +2,12 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Session = require('../models/Session');
 const tenantContext = require('./tenantContext');
+const { connectDB } = require('../config/db');
 
 const auth = async (req, res, next) => {
     try {
+        // Ensure DB connection on Vercel serverless cold starts
+        await connectDB();
         // Get token from HttpOnly cookie or Authorization header
         const token = req.cookies?.crm_session || req.header('Authorization')?.replace('Bearer ', '');
         

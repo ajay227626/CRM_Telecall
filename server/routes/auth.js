@@ -7,6 +7,7 @@ const axios = require('axios');
 const jwksClient = require('jwks-rsa');
 const User = require('../models/User');
 const Session = require('../models/Session');
+const { connectDB } = require('../config/db');
 
 // ==========================================
 // Central SLM Identity Provider (OIDC + PKCE S256)
@@ -181,6 +182,9 @@ const handleOidcLogin = (req, res) => {
 // Handler: OIDC Callback
 const handleOidcCallback = async (req, res) => {
   try {
+    // Ensure DB is connected (critical for Vercel serverless cold starts)
+    await connectDB();
+
     const { code, state, error, error_description } = req.query;
 
     if (error) {
@@ -306,6 +310,8 @@ router.get('/slm/callback', handleOidcCallback);
 // Handler: OIDC Back-Channel Logout (OpenID Connect Back-Channel Logout 1.0)
 const handleBackchannelLogout = async (req, res) => {
   try {
+    await connectDB();
+
     const logoutToken = req.body?.logout_token || req.query?.logout_token;
 
     if (!logoutToken) {
@@ -376,6 +382,8 @@ router.post('/slm/backchannel-logout', handleBackchannelLogout);
 // GET /api/auth/me: Session & Current User
 router.get('/me', async (req, res) => {
   try {
+    await connectDB();
+
     const sessionToken = req.cookies?.crm_session || req.header('Authorization')?.replace('Bearer ', '');
     if (!sessionToken) {
       return res.status(401).json({ authenticated: false, user: null });
@@ -429,6 +437,8 @@ router.get('/me', async (req, res) => {
 // POST /api/auth/logout: Centralized Logout
 router.post('/logout', async (req, res) => {
   try {
+    await connectDB();
+
     const sessionToken = req.cookies?.crm_session;
     if (sessionToken) {
       await Session.deleteOne({ sessionToken });
