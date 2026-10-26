@@ -46,7 +46,7 @@ export const hasPermission = (permission) => {
     const role = user.role || user.systemRole;
 
     // 1. SuperAdmin has unrestricted access
-    if (role === ROLES.SUPER_ADMIN || user.email === 'ajay22071997barman@gmail.com') return true;
+    if (role === ROLES.SUPER_ADMIN || user.permissions?.includes('ALL')) return true;
 
     // 2. Check explicit permissions array (if available from backend)
     if (user.permissions && Array.isArray(user.permissions) && user.permissions.includes(permission)) {

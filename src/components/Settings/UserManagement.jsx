@@ -8,7 +8,7 @@ import ConfirmationModal from '../Shared/ConfirmationModal';
 import InputModal from '../Shared/InputModal';
 
 const currentUser = getUser();
-const isSuperAdmin = currentUser?.systemRole === ROLES.SUPER_ADMIN || currentUser?.email === 'ajay22071997barman@gmail.com';
+const isSuperAdmin = currentUser?.systemRole === ROLES.SUPER_ADMIN || currentUser?.role === ROLES.SUPER_ADMIN || currentUser?.permissions?.includes('ALL');
 
 const UserManagement = () => {
     const { theme } = useAppearance();

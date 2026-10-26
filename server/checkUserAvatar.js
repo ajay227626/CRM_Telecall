@@ -8,7 +8,12 @@ async function checkUser() {
         await mongoose.connect(process.env.MONGODB_URI);
         console.log('Connected to MongoDB');
 
-        const user = await User.findOne({ email: 'ajay@ceoitbox.in' });
+        const email = process.argv[2] || process.env.ADMIN_EMAIL;
+        if (!email) {
+            console.log('Usage: node server/checkUserAvatar.js <email>');
+            process.exit(1);
+        }
+        const user = await User.findOne({ email });
         console.log('\nUser data:');
         console.log('Name:', user.name);
         console.log('Email:', user.email);

@@ -24,7 +24,7 @@ async function seedSLM() {
         description: 'Next-generation telecalling CRM with real-time pipeline management, automated call logging, lead aging tracking, AI scoring, and seamless Central SLM single sign-on.',
         repoUrl: 'https://github.com/ajay227626/CRM_Telecall',
         techStack: ['React 19', 'Vite', 'Node.js', 'Express 5', 'MongoDB Atlas', 'TailwindCSS'],
-        owner: 'ajay22071997barman@gmail.com',
+        owner: process.env.PRODUCT_OWNER || 'Ajay Web Services',
         environments: {
             development: { url: 'http://localhost:5173' },
             staging: { url: 'https://staging-crm.ajaywebservices.in' },

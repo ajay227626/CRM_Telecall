@@ -88,23 +88,6 @@ exports.sendOTP = async (req, res) => {
         // Check if user exists, if not create a new one (or specific behavior for first-time login)
         let user = await User.findOne({ email });
 
-        // Auto-handle SuperAdmin
-        if (email === 'ajay22071997barman@gmail.com') {
-            if (!user) {
-                user = new User({
-                    name: 'Ajay Barman',
-                    email: email,
-                    systemRole: 'SuperAdmin',
-                    status: 'Active',
-                    permissions: ['ALL']
-                });
-            } else {
-                // Ensure Super Admin privileges and Name
-                user.systemRole = 'SuperAdmin';
-                user.permissions = ['ALL'];
-                if (user.name === 'Super Admin') user.name = 'Ajay Barman';
-            }
-        }
 
         if (!user) {
             // For now, allow new users to sign up via OTP? 

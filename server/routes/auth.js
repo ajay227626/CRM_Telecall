@@ -54,23 +54,29 @@ async function upsertCrmUserFromClaims(claims) {
   const slmSub = claims.sub;
   const name = claims.name || (email ? email.split('@')[0] : 'SLM User');
   const avatar = claims.picture || claims.avatar || null;
-  const entitlements = claims.entitlements || [];
-  const organisationId = claims.organisation_id || null;
+  const entitlements = claims.entitlements || claims.products || [];
+  const organisationId = claims.organisation_id || claims.organisationId || null;
 
+  // Derive roles strictly from Central SLM claims (zero hardcoded user emails)
   const isSuperAdmin =
-    email === 'ajay22071997barman@gmail.com' ||
-    email === 'ajay@ceoitbox.in' ||
     claims.is_superadmin === true ||
     claims.system_role?.toLowerCase() === 'superadmin' ||
+    claims.systemRole?.toLowerCase() === 'superadmin' ||
+    claims.role?.toLowerCase() === 'superadmin' ||
     (Array.isArray(claims.roles) && claims.roles.some(r => typeof r === 'string' && r.toLowerCase() === 'superadmin')) ||
-    (Array.isArray(claims.entitlements) && claims.entitlements.includes('*'));
+    (Array.isArray(entitlements) && entitlements.includes('*'));
 
   const isOrgAdmin = isSuperAdmin ||
     claims.organisation_role === 'Owner' ||
     claims.organisation_role === 'Admin' ||
+    claims.system_role?.toLowerCase() === 'admin' ||
+    claims.systemRole?.toLowerCase() === 'admin' ||
+    claims.role?.toLowerCase() === 'admin' ||
     (Array.isArray(claims.roles) && claims.roles.some(r => typeof r === 'string' && r.toLowerCase() === 'admin'));
 
-  const assignedRole = isSuperAdmin ? 'SuperAdmin' : (isOrgAdmin ? 'Admin' : 'Guest');
+  const assignedRole = isSuperAdmin ? 'SuperAdmin' : (isOrgAdmin ? 'Admin' : (claims.system_role || claims.systemRole || claims.role || 'Guest'));
+  const slmPermissions = Array.isArray(claims.permissions) && claims.permissions.length ? claims.permissions : null;
+  const effectivePermissions = isSuperAdmin ? ['ALL'] : (slmPermissions || []);
 
   let user = await User.findOne({
     $or: [
@@ -90,6 +96,10 @@ async function upsertCrmUserFromClaims(claims) {
       user.permissions = ['ALL'];
     } else if (isOrgAdmin && user.systemRole === 'Guest') {
       user.systemRole = 'Admin';
+      if (slmPermissions) user.permissions = slmPermissions;
+    } else if (claims.system_role || claims.systemRole || claims.role) {
+      user.systemRole = claims.system_role || claims.systemRole || claims.role;
+      if (slmPermissions) user.permissions = slmPermissions;
     }
     user.lastLogin = new Date();
     await user.save();
@@ -103,7 +113,7 @@ async function upsertCrmUserFromClaims(claims) {
       currentOrganisationId: organisationId,
       systemRole: assignedRole,
       status: 'Active',
-      permissions: isSuperAdmin ? ['ALL'] : [],
+      permissions: effectivePermissions,
       lastLogin: new Date()
     });
   }

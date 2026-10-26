@@ -8,11 +8,12 @@ async function assignAdmin() {
         await mongoose.connect(process.env.MONGODB_URI);
         console.log('Connected to MongoDB');
 
-        const user = await User.findOne({ email: 'ajay@ceoitbox.in' });
-        if (!user) {
-            console.log('User not found');
+        const email = process.argv[2] || process.env.ADMIN_EMAIL;
+        if (!email) {
+            console.log('Usage: node server/assignAdmin.js <email>');
             process.exit(1);
         }
+        const user = await User.findOne({ email });
 
         user.systemRole = 'Admin';
         await user.save();

@@ -1025,8 +1025,8 @@ const Profile = ({ user: initialUser, onLogout, onUserUpdate }) => {
         }
     };
 
-    const isSuperAdmin = user?.role === 'SuperAdmin' || user?.email === 'ajay22071997barman@gmail.com';
-    const isAdmin = user?.role === 'Admin' || isSuperAdmin;
+    const isSuperAdmin = user?.role === 'SuperAdmin' || user?.systemRole === 'SuperAdmin';
+    const isAdmin = user?.role === 'Admin' || user?.systemRole === 'Admin' || isSuperAdmin;
 
     const handleSaveProfile = async () => {
         try {
