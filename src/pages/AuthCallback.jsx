@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { getApiBaseUrl } from '../utils/apiUrl';
 
 const AuthCallback = ({ onLogin }) => {
     const [searchParams] = useSearchParams();
@@ -30,7 +31,7 @@ const AuthCallback = ({ onLogin }) => {
         // Handle case where OIDC redirected directly to /auth/callback with code & state
         if (code && !token) {
             hasProcessed.current = true;
-            const backendCallback = `${import.meta.env.VITE_API_URL || ''}/api/auth/slm/callback?code=${encodeURIComponent(code)}${state ? `&state=${encodeURIComponent(state)}` : ''}`;
+            const backendCallback = `${getApiBaseUrl()}/api/auth/slm/callback?code=${encodeURIComponent(code)}${state ? `&state=${encodeURIComponent(state)}` : ''}`;
             window.location.href = backendCallback;
             return;
         }

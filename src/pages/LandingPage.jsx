@@ -20,6 +20,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { useEcosystemApps } from '../hooks/useEcosystemApps';
+import { getApiBaseUrl } from '../utils/apiUrl';
 
 export default function LandingPage({ user }) {
   const navigate = useNavigate();
@@ -60,7 +61,7 @@ export default function LandingPage({ user }) {
     if (user) {
       navigate('/dashboard');
     } else {
-      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const apiUrl = getApiBaseUrl();
       window.location.href = `${apiUrl}/api/auth/oidc/login?returnUrl=%2Fdashboard`;
     }
   };

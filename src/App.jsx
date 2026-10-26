@@ -15,6 +15,7 @@ import Activity from './pages/Activity';
 import Help from './pages/Help';
 import { Toaster } from 'react-hot-toast';
 import { AppearanceProvider } from './context/AppearanceContext';
+import { getApiBaseUrl } from './utils/apiUrl';
 import './index.css';
 
 function App() {
@@ -34,7 +35,7 @@ function App() {
       lastCheckTime = now;
 
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || '';
+        const apiUrl = getApiBaseUrl();
         const res = await fetch(`${apiUrl}/api/auth/me`, {
           credentials: 'include'
         });
@@ -109,7 +110,7 @@ function App() {
       const prompt = params.get('prompt') || '';
 
       if (!user) {
-        const apiUrl = import.meta.env.VITE_API_URL || '';
+        const apiUrl = getApiBaseUrl();
         let url = `${apiUrl}/api/auth/oidc/login?returnUrl=${encodeURIComponent(window.location.pathname)}`;
         if (orgId) url += `&organisation_id=${encodeURIComponent(orgId)}`;
         if (prompt) url += `&prompt=${encodeURIComponent(prompt)}`;
@@ -125,7 +126,7 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const apiUrl = getApiBaseUrl();
       await fetch(`${apiUrl}/api/auth/logout`, {
         method: 'POST',
         credentials: 'include'

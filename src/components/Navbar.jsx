@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
 import { useEcosystemApps } from '../hooks/useEcosystemApps';
+import { getApiBaseUrl } from '../utils/apiUrl';
 
 const Navbar = ({ user: initialUser, onLogout }) => {
   const { t } = useTranslation();
@@ -19,7 +20,7 @@ const Navbar = ({ user: initialUser, onLogout }) => {
 
     const fetchUser = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || '';
+        const apiUrl = getApiBaseUrl();
         const res = await fetch(`${apiUrl}/api/auth/me`, { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();

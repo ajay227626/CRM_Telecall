@@ -1,4 +1,5 @@
-const API_BASE = `${import.meta.env.VITE_API_URL || ''}/api`;
+import { getApiBaseUrl } from './apiUrl.js';
+const API_BASE = `${getApiBaseUrl()}/api`;
 import notify from './toast.jsx';
 
 // Helper function to get the token from localStorage

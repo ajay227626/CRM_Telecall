@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getUser } from '../utils/permissions';
 import MarkdownViewer from '../components/MarkdownViewer';
 import axios from 'axios';
+import { getApiBaseUrl } from '../utils/apiUrl';
 
 const Help = () => {
     const [activeSection, setActiveSection] = useState('getting-started');
@@ -22,7 +23,7 @@ const Help = () => {
                 const token = localStorage.getItem('token');
                 if (!token) return;
 
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/users`, {
+                const response = await axios.get(`${getApiBaseUrl()}/api/users`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 

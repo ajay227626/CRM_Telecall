@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { getApiBaseUrl } from '../../utils/apiUrl';
 
 const MetaIntegration = () => {
     const [status, setStatus] = useState(null);
@@ -13,7 +14,7 @@ const MetaIntegration = () => {
     const loadStatus = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/meta/status`, {
+            const response = await axios.get(`${getApiBaseUrl()}/api/meta/status`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             setStatus(response.data);
@@ -26,7 +27,7 @@ const MetaIntegration = () => {
 
     const handleConnect = async () => {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/meta/auth-url`, {
+            const response = await axios.get(`${getApiBaseUrl()}/api/meta/auth-url`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
 
@@ -45,7 +46,7 @@ const MetaIntegration = () => {
 
         try {
             await axios.post(
-                `${import.meta.env.VITE_API_URL}/api/meta/disconnect`,
+                `${getApiBaseUrl()}/api/meta/disconnect`,
                 {},
                 { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
             );
@@ -62,7 +63,7 @@ const MetaIntegration = () => {
         try {
             setSyncing(true);
             await axios.post(
-                `${import.meta.env.VITE_API_URL}/api/meta/sync`,
+                `${getApiBaseUrl()}/api/meta/sync`,
                 {},
                 { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
             );

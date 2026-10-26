@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getApiBaseUrl } from '../utils/apiUrl';
 
 const ICON_MAP = {
   'workflow-management-system': { icon: 'ri-flow-chart', color: '#6366f1', gradient: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' },
@@ -57,7 +58,7 @@ export function useEcosystemApps() {
 
     async function loadCatalog() {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || '';
+        const apiUrl = getApiBaseUrl();
         // Try backend proxy first, then direct App Hub API
         let res = null;
         try {

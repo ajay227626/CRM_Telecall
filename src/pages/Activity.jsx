@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { formatTimeAgo } from '../utils/dateUtils';
 import ActivityDetailsModal from '../components/Activity/ActivityDetailsModal';
+import { getApiBaseUrl } from '../utils/apiUrl';
 
 const Activity = () => {
     const [filter, setFilter] = useState('all');
@@ -24,7 +25,7 @@ const Activity = () => {
                 limit: 50 // Fetch enough for a good view
             });
 
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/activities?${queryParams}`, {
+            const res = await fetch(`${getApiBaseUrl()}/api/activities?${queryParams}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, ArrowRight, AlertCircle, RefreshCw } from 'lucide-react';
+import { getApiBaseUrl } from '../utils/apiUrl';
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
@@ -39,7 +40,7 @@ export default function Login() {
     setLoading(true);
     setError('');
     const returnUrl = encodeURIComponent(getCleanReturnUrl());
-    const apiUrl = import.meta.env.VITE_API_URL || '';
+    const apiUrl = getApiBaseUrl();
     window.location.href = `${apiUrl}/api/auth/oidc/login?returnUrl=${returnUrl}`;
   };
 
