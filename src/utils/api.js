@@ -869,4 +869,76 @@ export const deleteNotification = async (id) => {
     }
 };
 
+// ==========================================
+// AI Gateway & Copilot API (Gemini 2.5 Flash)
+// ==========================================
+
+export const analyzeCallWithAi = async (data) => {
+    try {
+        const response = await apiFetch(`${API_BASE}/ai/analyze-call`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || 'Failed to analyze call with AI');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error analyzing call with AI:', error);
+        throw error;
+    }
+};
+
+export const queryTelecallerCopilot = async (data) => {
+    try {
+        const response = await apiFetch(`${API_BASE}/ai/copilot`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || 'Failed to query telecaller copilot');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error querying telecaller copilot:', error);
+        throw error;
+    }
+};
+
+export const saveByokApiKey = async (apiKey) => {
+    try {
+        const response = await apiFetch(`${API_BASE}/ai/byok/save`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ apiKey })
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || 'Failed to save BYOK key');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error saving BYOK API key:', error);
+        throw error;
+    }
+};
+
+export const getAiGatewayStatus = async () => {
+    try {
+        const response = await apiFetch(`${API_BASE}/ai/status`, {
+            headers: getAuthHeaders()
+        });
+        if (!response.ok) throw new Error('Failed to fetch AI gateway status');
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching AI status:', error);
+        throw error;
+    }
+};
+
+
 

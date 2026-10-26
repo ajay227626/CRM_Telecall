@@ -5,6 +5,7 @@ import { useAppearance } from '../context/AppearanceContext';
 import { usePermissions } from '../hooks/usePermissions';
 import { CallProvider } from '../context/CallContext';
 import DialerWidget from '../components/Dialer/DialerWidget';
+import CopilotDrawer from '../components/Dialer/CopilotDrawer';
 import Navbar from '../components/Navbar';
 
 const Sidebar = ({ user, onLogout, collapsed, toggleCollapse }) => {
@@ -97,6 +98,7 @@ const Sidebar = ({ user, onLogout, collapsed, toggleCollapse }) => {
 
 const DashboardLayout = ({ user, onLogout }) => {
     const [collapsed, setCollapsed] = React.useState(localStorage.getItem('sidebar-collapsed') === 'true');
+    const [showCopilot, setShowCopilot] = React.useState(false);
 
     const toggleCollapse = () => {
         const newState = !collapsed;
@@ -121,6 +123,40 @@ const DashboardLayout = ({ user, onLogout }) => {
                     </main>
                 </div>
                 <DialerWidget />
+
+                {/* Floating AI Copilot Trigger */}
+                <button
+                    onClick={() => setShowCopilot(!showCopilot)}
+                    className="copilot-floating-trigger"
+                    style={{
+                        position: 'fixed',
+                        bottom: '24px',
+                        right: '90px', // Offset from dialer/bottom-right
+                        height: '42px',
+                        padding: '0 0.875rem',
+                        borderRadius: '999px',
+                        background: 'linear-gradient(135deg, #1E1B4B, #4F46E5)',
+                        color: 'white',
+                        border: '1px solid rgba(255, 255, 255, 0.25)',
+                        boxShadow: '0 8px 20px rgba(79, 70, 229, 0.35)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                        fontSize: '0.8125rem',
+                        zIndex: 9980
+                    }}
+                    title="Open AI Sales Copilot"
+                >
+                    <i className="ri-sparkling-fill" style={{ color: '#FCD34D', fontSize: '16px' }}></i>
+                    <span>AI Copilot</span>
+                </button>
+
+                <CopilotDrawer
+                    isOpen={showCopilot}
+                    onClose={() => setShowCopilot(false)}
+                />
             </div>
         </CallProvider>
     );

@@ -72,6 +72,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/activities', require('./routes/activities'));
 app.use('/api/meta', metaRoutes);
 app.use('/api/ecosystem', require('./routes/ecosystem'));
+app.use('/api/ai', require('./routes/ai'));
 
 // Start standalone server only when run directly (local dev)
 if (require.main === module) {

@@ -39,7 +39,11 @@ const leadSchema = new mongoose.Schema({
     statusChangedAt: { type: Date, default: Date.now }, // Track when status last changed for aging
     assignedTo: { type: String },
     followUpDate: { type: Date },
-    notes: { type: String }
+    notes: { type: String },
+    aiScore: { type: Number, min: 0, max: 100, default: 0 },
+    intentLevel: { type: String, enum: ['high', 'medium', 'low', 'none'], default: 'none' },
+    lastSentiment: { type: String, enum: ['positive', 'neutral', 'negative', null], default: null },
+    actionItems: [{ type: String }]
 }, { timestamps: true });
 
 const { tenantPlugin } = require('../middleware/tenantContext');

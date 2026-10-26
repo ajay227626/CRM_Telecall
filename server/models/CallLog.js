@@ -18,11 +18,28 @@ const callLogSchema = new mongoose.Schema({
         enum: ['initiated', 'ringing', 'completed', 'no answer', 'busy', 'failed'],
         default: 'initiated'
     },
-    aiScore: { type: Number, min: 0, max: 10 },
+    aiScore: { type: Number, min: 0, max: 100 },
     aiSummary: { type: String },
     transcription: { type: String },
     recordingUrl: { type: String },
-    notes: { type: String }
+    notes: { type: String },
+    aiStatus: {
+        type: String,
+        enum: ['unprocessed', 'processing', 'completed', 'failed'],
+        default: 'unprocessed'
+    },
+    aiAnalysis: {
+        summary: { type: String },
+        customerSentiment: { type: String, enum: ['positive', 'neutral', 'negative'] },
+        sentimentScore: { type: Number },
+        leadIntent: { type: String, enum: ['high', 'medium', 'low', 'none'] },
+        budgetMentionedINR: { type: Number, default: null },
+        detectedObjections: [{ type: String }],
+        recommendedDisposition: { type: String },
+        actionItems: [{ type: String }],
+        telecallerCoachingTip: { type: String },
+        analyzedAt: { type: Date }
+    }
 }, { timestamps: true });
 
 const { tenantPlugin } = require('../middleware/tenantContext');

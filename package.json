@@ -13,7 +13,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server/server.js",
-    "test": "node test/test-cluster0-connection.js && node test/test-multitenancy.js && node test/test-backchannel.js"
+    "test": "node test/test-cluster0-connection.js && node test/test-multitenancy.js && node test/test-backchannel.js && node test/test-ai-engine.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
