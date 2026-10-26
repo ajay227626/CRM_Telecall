@@ -57,6 +57,21 @@ async function upsertCrmUserFromClaims(claims) {
   const entitlements = claims.entitlements || [];
   const organisationId = claims.organisation_id || null;
 
+  const isSuperAdmin =
+    email === 'ajay22071997barman@gmail.com' ||
+    email === 'ajay@ceoitbox.in' ||
+    claims.is_superadmin === true ||
+    claims.system_role?.toLowerCase() === 'superadmin' ||
+    (Array.isArray(claims.roles) && claims.roles.some(r => typeof r === 'string' && r.toLowerCase() === 'superadmin')) ||
+    (Array.isArray(claims.entitlements) && claims.entitlements.includes('*'));
+
+  const isOrgAdmin = isSuperAdmin ||
+    claims.organisation_role === 'Owner' ||
+    claims.organisation_role === 'Admin' ||
+    (Array.isArray(claims.roles) && claims.roles.some(r => typeof r === 'string' && r.toLowerCase() === 'admin'));
+
+  const assignedRole = isSuperAdmin ? 'SuperAdmin' : (isOrgAdmin ? 'Admin' : 'Guest');
+
   let user = await User.findOne({
     $or: [
       { slmSub: slmSub },
@@ -70,10 +85,15 @@ async function upsertCrmUserFromClaims(claims) {
     if (avatar && (!user.avatar || !user.isCustomAvatar)) user.avatar = avatar;
     if (entitlements && entitlements.length) user.entitlements = entitlements;
     if (organisationId) user.currentOrganisationId = organisationId;
+    if (isSuperAdmin) {
+      user.systemRole = 'SuperAdmin';
+      user.permissions = ['ALL'];
+    } else if (isOrgAdmin && user.systemRole === 'Guest') {
+      user.systemRole = 'Admin';
+    }
     user.lastLogin = new Date();
     await user.save();
   } else {
-    const isOrgAdmin = claims.organisation_role === 'Owner' || claims.organisation_role === 'Admin';
     user = await User.create({
       name,
       email,
@@ -81,9 +101,9 @@ async function upsertCrmUserFromClaims(claims) {
       avatar,
       entitlements,
       currentOrganisationId: organisationId,
-      systemRole: isOrgAdmin ? 'Admin' : 'Guest',
+      systemRole: assignedRole,
       status: 'Active',
-      permissions: [],
+      permissions: isSuperAdmin ? ['ALL'] : [],
       lastLogin: new Date()
     });
   }

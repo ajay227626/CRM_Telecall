@@ -47,7 +47,7 @@ const requireEntitlement = (product = DEFAULT_PRODUCT) => {
       'enterprise-suite'
     ];
 
-    const hasEntitlement = validMatches.some(id => allEntitlements.has(id));
+    const hasEntitlement = allEntitlements.has('*') || validMatches.some(id => allEntitlements.has(id));
 
     if (hasEntitlement) {
       return next();
