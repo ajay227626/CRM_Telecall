@@ -45,6 +45,9 @@ function App() {
           if (data.authenticated && data.user) {
             setUser(data.user);
             localStorage.setItem('user', JSON.stringify(data.user));
+            if (data.token) {
+              localStorage.setItem('token', data.token);
+            }
           } else {
             handleSessionRevoked();
           }

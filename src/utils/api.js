@@ -16,10 +16,27 @@ const getAuthHeaders = () => {
     };
 };
 
+// Universal API fetch wrapper ensuring credentials (crm_session cookie) and auth headers
+export const apiFetch = async (url, options = {}) => {
+    const authHeaders = getAuthHeaders();
+    const headers = {
+        ...authHeaders,
+        ...(options.headers || {})
+    };
+    if (options.body instanceof FormData) {
+        delete headers['Content-Type'];
+    }
+    return fetch(url, {
+        credentials: 'include',
+        ...options,
+        headers
+    });
+};
+
 // Settings API
 export const getSettings = async (category) => {
     try {
-        const response = await fetch(`${API_BASE}/settings/${category}`, {
+        const response = await apiFetch(`${API_BASE}/settings/${category}`, {
             headers: getAuthHeaders()
         });
         if (!response.ok) throw new Error('Failed to fetch settings');
@@ -33,7 +50,7 @@ export const getSettings = async (category) => {
 
 export const saveSettings = async (category, data) => {
     try {
-        const response = await fetch(`${API_BASE}/settings/${category}`, {
+        const response = await apiFetch(`${API_BASE}/settings/${category}`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(data)
@@ -50,7 +67,7 @@ export const saveSettings = async (category, data) => {
 // Get effective settings with inheritance (global + user merged)
 export const getEffectiveApiSettings = async (category, userId) => {
     try {
-        const response = await fetch(`${API_BASE}/settings/${category}/effective/${userId}`, {
+        const response = await apiFetch(`${API_BASE}/settings/${category}/effective/${userId}`, {
             headers: getAuthHeaders()
         });
         if (!response.ok) throw new Error('Failed to fetch effective settings');
@@ -65,7 +82,7 @@ export const getEffectiveApiSettings = async (category, userId) => {
 // Save user-scoped settings (Admin level)
 export const saveUserSettings = async (category, userId, data) => {
     try {
-        const response = await fetch(`${API_BASE}/settings/${category}/user/${userId}`, {
+        const response = await apiFetch(`${API_BASE}/settings/${category}/user/${userId}`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(data)
@@ -83,7 +100,7 @@ export const saveUserSettings = async (category, userId, data) => {
 // Users API
 export const getUsers = async () => {
     try {
-        const response = await fetch(`${API_BASE}/users`, {
+        const response = await apiFetch(`${API_BASE}/users`, {
             headers: getAuthHeaders()
         });
         if (!response.ok) throw new Error('Failed to fetch users');
@@ -97,7 +114,7 @@ export const getUsers = async () => {
 
 export const createUser = async (userData) => {
     try {
-        const response = await fetch(`${API_BASE}/users`, {
+        const response = await apiFetch(`${API_BASE}/users`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(userData)
@@ -116,7 +133,7 @@ export const createUser = async (userData) => {
 
 export const updateUser = async (id, userData) => {
     try {
-        const response = await fetch(`${API_BASE}/users/${id}`, {
+        const response = await apiFetch(`${API_BASE}/users/${id}`, {
             method: 'PUT',
             headers: getAuthHeaders(),
             body: JSON.stringify(userData)
@@ -132,7 +149,7 @@ export const updateUser = async (id, userData) => {
 
 export const deleteUser = async (id) => {
     try {
-        const response = await fetch(`${API_BASE}/users/${id}`, {
+        const response = await apiFetch(`${API_BASE}/users/${id}`, {
             method: 'DELETE',
             headers: getAuthHeaders()
         });
@@ -147,7 +164,7 @@ export const deleteUser = async (id) => {
 
 export const toggleUserStatus = async (id) => {
     try {
-        const response = await fetch(`${API_BASE}/users/${id}/toggle-status`, {
+        const response = await apiFetch(`${API_BASE}/users/${id}/toggle-status`, {
             method: 'PATCH',
             headers: getAuthHeaders()
         });
@@ -162,7 +179,7 @@ export const toggleUserStatus = async (id) => {
 
 export const updateUserPermissions = async (id, permissions) => {
     try {
-        const response = await fetch(`${API_BASE}/users/${id}/permissions`, {
+        const response = await apiFetch(`${API_BASE}/users/${id}/permissions`, {
             method: 'PATCH',
             headers: getAuthHeaders(),
             body: JSON.stringify({ permissions })
@@ -178,7 +195,7 @@ export const updateUserPermissions = async (id, permissions) => {
 
 export const getUserRestrictions = async (id) => {
     try {
-        const response = await fetch(`${API_BASE}/users/${id}/restrictions`, {
+        const response = await apiFetch(`${API_BASE}/users/${id}/restrictions`, {
             headers: getAuthHeaders()
         });
         if (!response.ok) throw new Error('Failed to fetch user restrictions');
@@ -192,7 +209,7 @@ export const getUserRestrictions = async (id) => {
 
 export const setUserRestrictions = async (id, restrictions) => {
     try {
-        const response = await fetch(`${API_BASE}/users/${id}/restrictions`, {
+        const response = await apiFetch(`${API_BASE}/users/${id}/restrictions`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(restrictions)
@@ -211,7 +228,7 @@ export const getLeads = async (params = {}) => {
     try {
         const queryString = new URLSearchParams(params).toString();
         const url = queryString ? `${API_BASE}/leads?${queryString}` : `${API_BASE}/leads`;
-        const response = await fetch(url, {
+        const response = await apiFetch(url, {
             headers: getAuthHeaders()
         });
         if (!response.ok) throw new Error('Failed to fetch leads');
@@ -224,7 +241,7 @@ export const getLeads = async (params = {}) => {
 
 export const createLead = async (leadData) => {
     try {
-        const response = await fetch(`${API_BASE}/leads`, {
+        const response = await apiFetch(`${API_BASE}/leads`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(leadData)
@@ -242,7 +259,7 @@ export const createLead = async (leadData) => {
 
 export const updateLead = async (id, leadData) => {
     try {
-        const response = await fetch(`${API_BASE}/leads/${id}`, {
+        const response = await apiFetch(`${API_BASE}/leads/${id}`, {
             method: 'PUT',
             headers: getAuthHeaders(),
             body: JSON.stringify(leadData)
@@ -257,7 +274,7 @@ export const updateLead = async (id, leadData) => {
 
 export const deleteLead = async (id) => {
     try {
-        const response = await fetch(`${API_BASE}/leads/${id}`, {
+        const response = await apiFetch(`${API_BASE}/leads/${id}`, {
             method: 'DELETE',
             headers: getAuthHeaders()
         });
@@ -271,7 +288,7 @@ export const deleteLead = async (id) => {
 
 export const bulkCreateLeads = async (leads) => {
     try {
-        const response = await fetch(`${API_BASE}/leads/bulk`, {
+        const response = await apiFetch(`${API_BASE}/leads/bulk`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify({ leads })
@@ -286,7 +303,7 @@ export const bulkCreateLeads = async (leads) => {
 
 export const deleteMultipleLeads = async (ids) => {
     try {
-        const response = await fetch(`${API_BASE}/leads/delete-multiple`, {
+        const response = await apiFetch(`${API_BASE}/leads/delete-multiple`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify({ ids })
@@ -304,7 +321,7 @@ export const getCallLogs = async (params = {}) => {
     try {
         const queryString = new URLSearchParams(params).toString();
         const url = queryString ? `${API_BASE}/call-logs?${queryString}` : `${API_BASE}/call-logs`;
-        const response = await fetch(url, {
+        const response = await apiFetch(url, {
             headers: getAuthHeaders()
         });
         if (!response.ok) throw new Error('Failed to fetch call logs');
@@ -317,7 +334,7 @@ export const getCallLogs = async (params = {}) => {
 
 export const getCallStats = async () => {
     try {
-        const response = await fetch(`${API_BASE}/call-logs/stats`, {
+        const response = await apiFetch(`${API_BASE}/call-logs/stats`, {
             headers: getAuthHeaders()
         });
         if (!response.ok) throw new Error('Failed to fetch call stats');
@@ -330,7 +347,7 @@ export const getCallStats = async () => {
 
 export const createCallLog = async (callData) => {
     try {
-        const response = await fetch(`${API_BASE}/call-logs`, {
+        const response = await apiFetch(`${API_BASE}/call-logs`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(callData)
@@ -345,7 +362,7 @@ export const createCallLog = async (callData) => {
 
 export const initiateCall = async (callData) => {
     try {
-        const response = await fetch(`${API_BASE}/call-logs/initiate`, {
+        const response = await apiFetch(`${API_BASE}/call-logs/initiate`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(callData)
@@ -360,7 +377,7 @@ export const initiateCall = async (callData) => {
 
 export const updateCallLog = async (id, callData) => {
     try {
-        const response = await fetch(`${API_BASE}/call-logs/${id}`, {
+        const response = await apiFetch(`${API_BASE}/call-logs/${id}`, {
             method: 'PUT',
             headers: getAuthHeaders(),
             body: JSON.stringify(callData)
@@ -376,7 +393,7 @@ export const updateCallLog = async (id, callData) => {
 // Dashboard API
 export const getDashboardStats = async () => {
     try {
-        const response = await fetch(`${API_BASE}/dashboard/stats`, {
+        const response = await apiFetch(`${API_BASE}/dashboard/stats`, {
             headers: getAuthHeaders()
         });
         if (!response.ok) throw new Error('Failed to fetch dashboard stats');
@@ -389,7 +406,7 @@ export const getDashboardStats = async () => {
 
 export const getDashboardDetails = async (category) => {
     try {
-        const response = await fetch(`${API_BASE}/dashboard/details/${category}`, {
+        const response = await apiFetch(`${API_BASE}/dashboard/details/${category}`, {
             headers: getAuthHeaders()
         });
         if (!response.ok) throw new Error('Failed to fetch dashboard details');
@@ -410,7 +427,7 @@ export const getChartData = async (range, type, customRange = null) => {
             url += `&from=${from}&to=${to}`;
         }
 
-        const response = await fetch(url, {
+        const response = await apiFetch(url, {
             headers: getAuthHeaders()
         });
         if (!response.ok) throw new Error('Failed to fetch chart data');
@@ -424,7 +441,7 @@ export const getChartData = async (range, type, customRange = null) => {
 // Auth API
 export const sendOTP = async (email) => {
     try {
-        const response = await fetch(`${API_BASE}/auth/send-otp`, {
+        const response = await apiFetch(`${API_BASE}/auth/send-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
@@ -439,7 +456,7 @@ export const sendOTP = async (email) => {
 
 export const initiatePasswordReset = async (email) => {
     try {
-        const response = await fetch(`${API_BASE}/auth/initiate-password-reset`, {
+        const response = await apiFetch(`${API_BASE}/auth/initiate-password-reset`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
@@ -454,7 +471,7 @@ export const initiatePasswordReset = async (email) => {
 
 export const verifyOTPAndResetPassword = async (email, code, newPassword) => {
     try {
-        const response = await fetch(`${API_BASE}/auth/verify-otp-reset-password`, {
+        const response = await apiFetch(`${API_BASE}/auth/verify-otp-reset-password`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, code, newPassword })
@@ -469,7 +486,7 @@ export const verifyOTPAndResetPassword = async (email, code, newPassword) => {
 
 export const login = async (email, password) => {
     try {
-        const response = await fetch(`${API_BASE}/auth/login`, {
+        const response = await apiFetch(`${API_BASE}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -485,7 +502,7 @@ export const login = async (email, password) => {
 
 export const verifyOTP = async (email, code) => {
     try {
-        const response = await fetch(`${API_BASE}/auth/verify-otp`, {
+        const response = await apiFetch(`${API_BASE}/auth/verify-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, code })
@@ -505,7 +522,7 @@ export const uploadAvatar = async (file) => {
         formData.append('avatar', file);
 
         const token = getAuthToken();
-        const response = await fetch(`${API_BASE}/auth/upload-avatar`, {
+        const response = await apiFetch(`${API_BASE}/auth/upload-avatar`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -529,7 +546,7 @@ export const uploadAvatar = async (file) => {
 export const selectAvatar = async (avatarUrl) => {
     try {
         const token = getAuthToken();
-        const response = await fetch(`${API_BASE}/auth/select-avatar`, {
+        const response = await apiFetch(`${API_BASE}/auth/select-avatar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -552,7 +569,7 @@ export const selectAvatar = async (avatarUrl) => {
 // Account Management API
 export const deactivateAccount = async () => {
     try {
-        const response = await fetch(`${API_BASE}/auth/deactivate`, {
+        const response = await apiFetch(`${API_BASE}/auth/deactivate`, {
             method: 'POST',
             headers: getAuthHeaders()
         });
@@ -566,7 +583,7 @@ export const deactivateAccount = async () => {
 
 export const requestDeleteAccount = async () => {
     try {
-        const response = await fetch(`${API_BASE}/auth/request-delete`, {
+        const response = await apiFetch(`${API_BASE}/auth/request-delete`, {
             method: 'POST',
             headers: getAuthHeaders()
         });
@@ -580,7 +597,7 @@ export const requestDeleteAccount = async () => {
 
 export const confirmDeleteAccount = async (otp, confirmationString) => {
     try {
-        const response = await fetch(`${API_BASE}/auth/confirm-delete`, {
+        const response = await apiFetch(`${API_BASE}/auth/confirm-delete`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify({ otp, confirmationString })
@@ -599,7 +616,7 @@ export const confirmDeleteAccount = async (otp, confirmationString) => {
 // Account Linking & Password Management
 export const unlinkProvider = async (provider) => {
     try {
-        const response = await fetch(`${API_BASE}/auth/unlink`, {
+        const response = await apiFetch(`${API_BASE}/auth/unlink`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify({ provider })
@@ -617,7 +634,7 @@ export const unlinkProvider = async (provider) => {
 
 export const requestSetPasswordOTP = async () => {
     try {
-        const response = await fetch(`${API_BASE}/auth/password/set-request`, {
+        const response = await apiFetch(`${API_BASE}/auth/password/set-request`, {
             method: 'POST',
             headers: getAuthHeaders()
         });
@@ -631,7 +648,7 @@ export const requestSetPasswordOTP = async () => {
 
 export const verifyAndSetPassword = async (otp, newPassword) => {
     try {
-        const response = await fetch(`${API_BASE}/auth/password/set-confirm`, {
+        const response = await apiFetch(`${API_BASE}/auth/password/set-confirm`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify({ otp, newPassword })
@@ -649,7 +666,7 @@ export const verifyAndSetPassword = async (otp, newPassword) => {
 
 export const initiateChangePassword = async (currentPassword, newPassword) => {
     try {
-        const response = await fetch(`${API_BASE}/auth/password/change-init`, {
+        const response = await apiFetch(`${API_BASE}/auth/password/change-init`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify({ currentPassword, newPassword })
@@ -667,7 +684,7 @@ export const initiateChangePassword = async (currentPassword, newPassword) => {
 
 export const finalizeChangePassword = async (otp, newPassword) => {
     try {
-        const response = await fetch(`${API_BASE}/auth/password/change-confirm`, {
+        const response = await apiFetch(`${API_BASE}/auth/password/change-confirm`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify({ otp, newPassword })
@@ -686,7 +703,7 @@ export const finalizeChangePassword = async (otp, newPassword) => {
 // Security Verification API
 export const requestSecurityOTP = async () => {
     try {
-        const response = await fetch(`${API_BASE}/auth/security/request-otp`, {
+        const response = await apiFetch(`${API_BASE}/auth/security/request-otp`, {
             method: 'POST',
             headers: getAuthHeaders()
         });
@@ -703,7 +720,7 @@ export const requestSecurityOTP = async () => {
 
 export const verifySecurityAction = async (credential) => {
     try {
-        const response = await fetch(`${API_BASE}/auth/security/verify`, {
+        const response = await apiFetch(`${API_BASE}/auth/security/verify`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(credential)
@@ -724,7 +741,7 @@ export const getTemplates = async (params = {}) => {
     try {
         const queryString = new URLSearchParams(params).toString();
         const url = queryString ? `${API_BASE}/settings-templates?${queryString}` : `${API_BASE}/settings-templates`;
-        const response = await fetch(url, {
+        const response = await apiFetch(url, {
             headers: getAuthHeaders()
         });
         if (!response.ok) throw new Error('Failed to fetch templates');
@@ -737,7 +754,7 @@ export const getTemplates = async (params = {}) => {
 
 export const createTemplate = async (templateData) => {
     try {
-        const response = await fetch(`${API_BASE}/settings-templates`, {
+        const response = await apiFetch(`${API_BASE}/settings-templates`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(templateData)
@@ -755,7 +772,7 @@ export const createTemplate = async (templateData) => {
 
 export const updateTemplate = async (id, templateData) => {
     try {
-        const response = await fetch(`${API_BASE}/settings-templates/${id}`, {
+        const response = await apiFetch(`${API_BASE}/settings-templates/${id}`, {
             method: 'PUT',
             headers: getAuthHeaders(),
             body: JSON.stringify(templateData)
@@ -770,7 +787,7 @@ export const updateTemplate = async (id, templateData) => {
 
 export const deleteTemplate = async (id) => {
     try {
-        const response = await fetch(`${API_BASE}/settings-templates/${id}`, {
+        const response = await apiFetch(`${API_BASE}/settings-templates/${id}`, {
             method: 'DELETE',
             headers: getAuthHeaders()
         });
@@ -784,7 +801,7 @@ export const deleteTemplate = async (id) => {
 
 export const getEffectiveSettings = async (userId, type) => {
     try {
-        const response = await fetch(`${API_BASE}/settings-templates/effective/${userId}/${type}`, {
+        const response = await apiFetch(`${API_BASE}/settings-templates/effective/${userId}/${type}`, {
             headers: getAuthHeaders()
         });
         if (!response.ok) throw new Error('Failed to fetch effective settings');
@@ -798,7 +815,7 @@ export const getEffectiveSettings = async (userId, type) => {
 // Notifications API
 export const getNotifications = async () => {
     try {
-        const response = await fetch(`${API_BASE}/notifications`, {
+        const response = await apiFetch(`${API_BASE}/notifications`, {
             headers: getAuthHeaders()
         });
         if (!response.ok) throw new Error('Failed to fetch notifications');
@@ -812,7 +829,7 @@ export const getNotifications = async () => {
 
 export const markNotificationRead = async (id) => {
     try {
-        const response = await fetch(`${API_BASE}/notifications/${id}/read`, {
+        const response = await apiFetch(`${API_BASE}/notifications/${id}/read`, {
             method: 'PUT',
             headers: getAuthHeaders()
         });
@@ -826,7 +843,7 @@ export const markNotificationRead = async (id) => {
 
 export const markAllNotificationsRead = async () => {
     try {
-        const response = await fetch(`${API_BASE}/notifications/read-all`, {
+        const response = await apiFetch(`${API_BASE}/notifications/read-all`, {
             method: 'PUT',
             headers: getAuthHeaders()
         });
@@ -840,7 +857,7 @@ export const markAllNotificationsRead = async () => {
 
 export const deleteNotification = async (id) => {
     try {
-        const response = await fetch(`${API_BASE}/notifications/${id}`, {
+        const response = await apiFetch(`${API_BASE}/notifications/${id}`, {
             method: 'DELETE',
             headers: getAuthHeaders()
         });

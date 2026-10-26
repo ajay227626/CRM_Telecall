@@ -469,6 +469,7 @@ router.get('/me', async (req, res) => {
 
     res.json({
       authenticated: true,
+      token: sessionToken,
       user: {
         id: user._id,
         _id: user._id,
