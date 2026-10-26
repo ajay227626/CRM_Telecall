@@ -6,7 +6,8 @@ const cookieParser = require('cookie-parser');
 
 const path = require('path');
 
-// Load environment variables FIRST (resolve relative to backend folder)
+// Load environment variables FIRST (check root .env, then backend .env)
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 dotenv.config();
 
