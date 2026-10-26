@@ -30,4 +30,7 @@ const activitySchema = new mongoose.Schema({
     }
 });
 
+const { tenantPlugin } = require('../middleware/tenantContext');
+activitySchema.plugin(tenantPlugin);
+
 module.exports = mongoose.model('Activity', activitySchema);

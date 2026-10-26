@@ -1,30 +1,47 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Session = require('../models/Session');
+const tenantContext = require('./tenantContext');
 
 const auth = async (req, res, next) => {
     try {
-        // Get token from header
-        const token = req.header('Authorization')?.replace('Bearer ', '');
+        // Get token from HttpOnly cookie or Authorization header
+        const token = req.cookies?.crm_session || req.header('Authorization')?.replace('Bearer ', '');
         
         if (!token) {
-            return res.status(401).json({ error: 'No token, authorization denied' });
+            return res.status(401).json({ error: 'No session or token, authorization denied' });
         }
 
-        // Verify token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key');
-        
-        // Find user without password
-        const user = await User.findById(decoded.userId).select('-password');
-        
-        if (!user) {
-            return res.status(401).json({ error: 'Token is not valid' });
+        // 1. Try server-managed session lookup
+        try {
+            const session = await Session.findOne({ sessionToken: token });
+            if (session && new Date() < new Date(session.expiresAt)) {
+                const user = await User.findById(session.userId).select('-password');
+                if (user) {
+                    req.user = user;
+                    req.sessionData = session;
+                    return tenantContext(req, res, next);
+                }
+            }
+        } catch (dbErr) {
+            console.warn('Session DB lookup warning:', dbErr.message);
         }
 
-        // Add user to request object
-        req.user = user;
-        next();
+        // 2. Fallback to JWT verification (legacy API tokens / bearer auth)
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'crm_telecaller_session_secret_key_2024_secure_random_string');
+            const user = await User.findById(decoded.userId).select('-password');
+            if (user) {
+                req.user = user;
+                return tenantContext(req, res, next);
+            }
+        } catch (jwtErr) {
+            // Both session and JWT failed
+        }
+
+        return res.status(401).json({ error: 'Session or token is not valid' });
     } catch (err) {
-        res.status(401).json({ error: 'Token is not valid' });
+        return res.status(401).json({ error: 'Authentication failed' });
     }
 };
 

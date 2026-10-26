@@ -5,6 +5,7 @@ import { useAppearance } from '../context/AppearanceContext';
 import { usePermissions } from '../hooks/usePermissions';
 import { CallProvider } from '../context/CallContext';
 import DialerWidget from '../components/Dialer/DialerWidget';
+import Navbar from '../components/Navbar';
 
 const Sidebar = ({ user, onLogout, collapsed, toggleCollapse }) => {
     const { appearance, general, toggleTheme } = useAppearance();
@@ -13,7 +14,7 @@ const Sidebar = ({ user, onLogout, collapsed, toggleCollapse }) => {
     const theme = appearance.theme;
 
     const navItems = [
-        { icon: <i className="ri-dashboard-line"></i>, labelKey: 'sidebar.dashboard', path: '/', permission: { resource: 'dashboard', action: 'view' } },
+        { icon: <i className="ri-dashboard-line"></i>, labelKey: 'sidebar.dashboard', path: '/dashboard', permission: { resource: 'dashboard', action: 'view' } },
         { icon: <i className="ri-user-follow-line"></i>, labelKey: 'sidebar.leads', path: '/leads', permission: { resource: 'leads', action: 'view' } },
         { icon: <i className="ri-phone-line"></i>, labelKey: 'sidebar.callLogs', path: '/call-logs', permission: { resource: 'calls', action: 'view' } },
         { icon: <i className="ri-settings-4-line"></i>, labelKey: 'sidebar.settings', path: '/settings', permission: { resource: 'settings', action: 'view' } },
@@ -113,9 +114,12 @@ const DashboardLayout = ({ user, onLogout }) => {
                     collapsed={collapsed}
                     toggleCollapse={toggleCollapse}
                 />
-                <main className="main-content">
-                    <Outlet />
-                </main>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: '100vh' }}>
+                    <Navbar user={user} onLogout={onLogout} />
+                    <main className="main-content" style={{ flex: 1, minHeight: 0 }}>
+                        <Outlet />
+                    </main>
+                </div>
                 <DialerWidget />
             </div>
         </CallProvider>

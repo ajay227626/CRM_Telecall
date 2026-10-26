@@ -18,21 +18,13 @@ const userSchema = new mongoose.Schema({
     },
 
     status: { type: String, enum: ['Active', 'Inactive', 'Suspended'], default: 'Active' },
-    permissions: [{ type: String }], // Legacy - will be deprecated
-    password: { type: String },
-    googleId: { type: String, unique: true, sparse: true },
-    microsoftId: { type: String, unique: true, sparse: true }, // Microsoft Auth ID
-    facebookId: { type: String, unique: true, sparse: true }, // Facebook Auth ID
+    permissions: [{ type: String }],
+    slmSub: { type: String, unique: true, sparse: true, index: true }, // Central SLM Identity Sub
+    entitlements: [{ type: String }],
+    currentOrganisationId: { type: String },
     avatar: { type: String },
     avatarHistory: [{ type: String }], // Store up to 4 recent uploads
-    googleAvatar: { type: String },    // Store the latest Google profile picture
-    microsoftAvatar: { type: String }, // Store the latest Microsoft profile picture
-    facebookAvatar: { type: String },  // Store the latest Facebook profile picture
-    isCustomAvatar: { type: Boolean, default: false }, // Track if using custom or Google
-    otp: {
-        code: { type: String },
-        expiresAt: { type: Date }
-    },
+    isCustomAvatar: { type: Boolean, default: false },
 
     // Trial period for Guest users
     trialPeriod: {

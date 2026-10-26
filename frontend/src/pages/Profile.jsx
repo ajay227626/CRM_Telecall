@@ -363,26 +363,28 @@ const SecuritySettings = ({ user, navigate, onUserUpdate }) => {
                 </div>
             </div>
 
-            {/* Password Management */}
+            {/* Central SLM Identity Management */}
             <div className="account-actions-section mb-6">
-                <h4 className="text-lg font-medium mb-4" style={{ color: 'var(--text-main)' }}>Password & Authentication</h4>
+                <h4 className="text-lg font-medium mb-4" style={{ color: 'var(--text-main)' }}>Authentication & Identity</h4>
                 <div className="action-card p-4 border rounded-lg flex justify-between items-center" style={{ background: 'var(--bg-main)' }}>
                     <div>
                         <h5 className="font-medium" style={{ color: 'var(--text-main)' }}>
-                            {user.hasPassword ? 'Change Password' : 'Set Password'}
+                            Central SLM Single Sign-On (OIDC)
                         </h5>
                         <p className="text-sm text-gray-500">
-                            {user.hasPassword
-                                ? 'Update your password securely with OTP verification.'
-                                : 'Secure your account by setting a password.'}
+                            Your password, multi-factor authentication, and security credentials are centrally secured by Central SLM.
                         </p>
                     </div>
-                    <button
-                        className="btn btn-secondary"
-                        onClick={startPasswordProcess}
+                    <a
+                        href="https://app.ajaywebservices.in/profile"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-secondary inline-flex items-center gap-2"
+                        style={{ textDecoration: 'none' }}
                     >
-                        {user.hasPassword ? 'Change Password' : 'Set Password'}
-                    </button>
+                        <span>Manage on SLM</span>
+                        <i className="ri-external-link-line"></i>
+                    </a>
                 </div>
             </div>
 

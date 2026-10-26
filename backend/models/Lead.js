@@ -42,4 +42,7 @@ const leadSchema = new mongoose.Schema({
     notes: { type: String }
 }, { timestamps: true });
 
+const { tenantPlugin } = require('../middleware/tenantContext');
+leadSchema.plugin(tenantPlugin);
+
 module.exports = mongoose.model('Lead', leadSchema);

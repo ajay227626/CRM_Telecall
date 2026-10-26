@@ -25,4 +25,7 @@ const callLogSchema = new mongoose.Schema({
     notes: { type: String }
 }, { timestamps: true });
 
+const { tenantPlugin } = require('../middleware/tenantContext');
+callLogSchema.plugin(tenantPlugin);
+
 module.exports = mongoose.model('CallLog', callLogSchema);

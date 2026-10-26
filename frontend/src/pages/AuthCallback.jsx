@@ -12,10 +12,28 @@ const AuthCallback = ({ onLogin }) => {
 
         const token = searchParams.get('token');
         const userDataString = searchParams.get('user');
+        const code = searchParams.get('code');
+        const state = searchParams.get('state');
+        const error = searchParams.get('error') || searchParams.get('error_description');
 
         console.log('AuthCallback - Token:', token ? 'Present' : 'Missing');
         console.log('AuthCallback - User Data:', userDataString ? 'Present' : 'Missing');
+        console.log('AuthCallback - Code:', code ? 'Present' : 'Missing');
         console.log('AuthCallback - Full URL:', window.location.href);
+
+        if (error) {
+            hasProcessed.current = true;
+            navigate(`/login?error=${encodeURIComponent(error)}`, { replace: true });
+            return;
+        }
+
+        // Handle case where OIDC redirected directly to /auth/callback with code & state
+        if (code && !token) {
+            hasProcessed.current = true;
+            const backendCallback = `${import.meta.env.VITE_API_URL || ''}/api/auth/slm/callback?code=${encodeURIComponent(code)}${state ? `&state=${encodeURIComponent(state)}` : ''}`;
+            window.location.href = backendCallback;
+            return;
+        }
 
         if (token && userDataString) {
             try {
@@ -40,7 +58,7 @@ const AuthCallback = ({ onLogin }) => {
                 navigate('/', { replace: true });
             } catch (error) {
                 console.error('Error processing auth callback:', error);
-                navigate('/login', { replace: true });
+                navigate(`/login?error=${encodeURIComponent('Failed to process login session')}`, { replace: true });
             }
         } else {
             // No token or user data, redirect to login

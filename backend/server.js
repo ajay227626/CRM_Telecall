@@ -5,11 +5,11 @@ const dotenv = require('dotenv');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 
-// Load environment variables FIRST
-dotenv.config();
+const path = require('path');
 
-// Now require passport (which needs env vars)
-const passport = require('./config/passport');
+// Load environment variables FIRST (resolve relative to backend folder)
+dotenv.config({ path: path.resolve(__dirname, '.env') });
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -19,27 +19,12 @@ app.use(cors({
     origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Organisation-Id']
 }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: false, // Set to true in production with HTTPS
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
-}));
-app.use(passport.initialize());
-app.use(passport.session());
 
-// Database Connection
-const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/telecall_crm';
-mongoose.connect(mongoUri)
-    .then(() => console.log('MongoDB Connected to:', mongoUri))
-    .catch(err => console.log('MongoDB Connection Error:', err));
+const { connectDB } = require('./config/db');
 
 // Routes
 const settingsRoutes = require('./routes/settings');
@@ -64,11 +49,28 @@ app.use('/api/settings-templates', settingsTemplatesRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/activities', require('./routes/activities'));
 app.use('/api/meta', metaRoutes);
+app.use('/api/ecosystem', require('./routes/ecosystem'));
 
 app.get('/', (req, res) => {
     res.send('Telecall CRM Backend is running');
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Start standalone server only when run directly or in development
+if (process.env.NODE_ENV !== 'production' || require.main === module) {
+    connectDB()
+        .then(() => {
+            app.listen(PORT, () => {
+                console.log(`Server running on port ${PORT}`);
+            });
+        })
+        .catch((err) => {
+            console.error('Initial MongoDB connection error:', err);
+        });
+}
+
+module.exports = app;

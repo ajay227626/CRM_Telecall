@@ -17,7 +17,11 @@ const settingsSchema = new mongoose.Schema({
     }
 });
 
-// Compound unique index to ensure one setting per category per user
-settingsSchema.index({ category: 1, user: 1 }, { unique: true });
+// Compound unique index to ensure one setting per category per user/org
+settingsSchema.index({ category: 1, user: 1 }, { unique: false });
+settingsSchema.index({ category: 1, organisationId: 1 });
+
+const { tenantPlugin } = require('../middleware/tenantContext');
+settingsSchema.plugin(tenantPlugin);
 
 module.exports = mongoose.model('Settings', settingsSchema);
