@@ -1,6 +1,12 @@
-if (!global.crypto?.randomBytes) {
-    const nodeCrypto = require('crypto');
-    global.crypto = Object.assign(global.crypto || {}, nodeCrypto);
+const nodeCrypto = require('crypto');
+if (!global.crypto) {
+    global.crypto = nodeCrypto;
+} else if (!global.crypto.randomBytes) {
+    try {
+        global.crypto.randomBytes = nodeCrypto.randomBytes.bind(nodeCrypto);
+    } catch (e) {
+        // crypto object non-extensible in some environments
+    }
 }
 const mongoose = require('mongoose');
 
